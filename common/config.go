@@ -27,15 +27,13 @@ const (
 	// CfgLogPrintSelfID determines whether to print node's ID in log (Useful in simulation when
 	// there are more than one node running).
 	CfgLogPrintSelfID = "log.printSelfID"
-
-	// CfgForceGCEnabled to enable force GC
-	CfgForceGCEnabled = "gc.enabled"
 )
 
 func init() {
 	viper.SetDefault(CfgThetaRPCEndpoint, "http://127.0.0.1:16888/rpc")
 
-	viper.SetDefault(CfgRPCAddress, "0.0.0.0")
+	viper.SetDefault(CfgRPCEnabled, true)
+	viper.SetDefault(CfgRPCAddress, "127.0.0.1")
 	viper.SetDefault(CfgRPCPort, "18888")
 	viper.SetDefault(CfgRPCMaxConnections, 2048)
 	viper.SetDefault(CfgRPCTimeoutSecs, 600)

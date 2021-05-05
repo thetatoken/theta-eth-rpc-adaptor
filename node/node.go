@@ -7,11 +7,11 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
-	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
 )
 
 type Node struct {
-	RPC *rpc
+	RPC *ethrpc.RPCAdaptorServer
 
 	// Life cycle
 	wg      *sync.WaitGroup
@@ -25,7 +25,7 @@ func NewNode() *Node {
 	node := &Node{}
 
 	if viper.GetBool(common.CfgRPCEnabled) {
-		node.RPC = rpc.NewRPCAdaptorServer()
+		node.RPC = ethrpc.NewRPCAdaptorServer()
 	}
 	return node
 }

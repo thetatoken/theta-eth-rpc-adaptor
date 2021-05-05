@@ -1,5 +1,7 @@
 # theta-eth-rpc-adaptor
 
+The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which translates the Theta RPC interface to the Ethereum RPC interface.
+
 ## Setup
 
 ### On macOS
@@ -40,12 +42,30 @@ On a macOS machine, the following command should build the `theta-eth-rpc-adapto
 make windows
 ```
 
-## Run the Edge Core
-Launch the edge core binary with the following command
+## Run the Adaptor
+
+To run the adaptor, you'd first need to run a Theta node on the same machine with its RPC port opened at 16888. Then, in another terminal, launch the adaptor binary with the following command, assuming the `config.yaml` file is placed under the `<CONFIG_FOLDER>/` folder:
 
 ```
 theta-eth-rpc-adaptor start --config=<CONFIG_FOLDER>
 ```
+
+Below is an example `config.yaml` file
+
+```
+theta:
+  rpcEndpoint: "http://127.0.0.1:16888/rpc"
+rpc:
+  port: 18888
+  enabled: true
+  address: "120.0.0.1"
+  timeoutSecs: 600 
+  maxConnections: 2048
+log:
+  levels: "*:debug"
+```
+
+For example, you can change the above `theta.rpcEnpoint` to a remote Theta RPC endpoint, or change `rpc.address` to "0.0.0.0" so the adaptor is accessor from remote IP addresses.
 
 ## RPC APIs
 
@@ -53,14 +73,14 @@ The RPC APIs should conform to the Ethereum JSON RPC API standard: https://eth.w
 
 ```
 # Query version
-curl -X POST --data '{"jsonrpc":"2.0","method":"eth_protocolVersion","params":[],"id":67}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.ProtocolVersion","params":[],"id":67}' http://localhost:18888/rpc
 
 # Query synchronization status
-curl -X POST --data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.Syncing","params":[],"id":1}' http://localhost:18888/rpc
 
 # Query block number
-curl -X POST --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.BlockNumber","params":[],"id":83}' http://localhost:18888/rpc
 
-# Query account balance (should return an integer which represents the current TFuel balance in wei)
-curl -X POST --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x407d73d8a49eeb85d32cf465507dd71d507100c1", "latest"],"id":1}' http://localhost:17888/rpc
+# Query account TFuel balance (should return an integer which represents the current TFuel balance in wei)
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.GetBalance","params":["0x407d73d8a49eeb85d32cf465507dd71d507100c1", "latest"],"id":1}' http://localhost:17888/rpc
 ```

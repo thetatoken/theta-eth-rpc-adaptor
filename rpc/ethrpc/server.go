@@ -1,4 +1,4 @@
-package rpc
+package ethrpc
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-var logger *log.Entry
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc"})
 
 type RPCAdaptorService struct {
 

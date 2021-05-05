@@ -1,4 +1,4 @@
-module github.com/thetatoken/edgecore
+module github.com/thetatoken/theta-eth-rpc-adaptor
 
 require (
 	github.com/aerospike/aerospike-client-go v1.36.0

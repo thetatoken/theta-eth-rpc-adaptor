@@ -16,7 +16,7 @@ import (
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start Theta ETH RPC Adaptor.",
+	Short: "Start Theta ETH RPC Adaptor",
 	Run:   runStart,
 }
 
