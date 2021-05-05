@@ -19,7 +19,7 @@ type ProtocolVersionResult struct {
 	Result string `json:"result"`
 }
 
-func (t *EthRPCService) ProtocolVersion(ctx context.Context) (result string, err error) {
+func (e *EthRPCService) ProtocolVersion(ctx context.Context) (result string, err error) {
 	logger.Infof("eth_protocolVersion called")
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
