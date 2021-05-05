@@ -10,7 +10,6 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/golang/snappy v0.0.3-0.20201103224600-674baa8c7fc3
 	github.com/gorilla/mux v1.8.0
-	github.com/harmony-one/harmony v1.10.2
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
 	github.com/herumi/bls-eth-go-binary v0.0.0-20200107021104-147ed25f233e
 	github.com/huin/goupnp v1.0.1-0.20210310174557-0ca763054c88
