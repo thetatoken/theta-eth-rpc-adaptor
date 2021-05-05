@@ -12,13 +12,6 @@ import (
 
 // ------------------------------- eth_protocolVersion -----------------------------------
 
-type ProtocolVersionArgs struct {
-}
-
-type ProtocolVersionResult struct {
-	Result string `json:"result"`
-}
-
 func (e *EthRPCService) ProtocolVersion(ctx context.Context) (result string, err error) {
 	logger.Infof("eth_protocolVersion called")
 
