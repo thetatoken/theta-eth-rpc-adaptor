@@ -1,9 +1,10 @@
 package ethrpc
 
 import (
+	"context"
 	"encoding/json"
 
-	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
@@ -18,10 +19,10 @@ type ProtocolVersionResult struct {
 	Result string `json:"result"`
 }
 
-func (t *RPCAdaptorService) ProtocolVersion(args *ProtocolVersionArgs, result *ProtocolVersionResult) (err error) {
-	logger.Infof("eth_protocolVersion called with args: %v", *args)
+func (t *EthRPCService) ProtocolVersion(ctx context.Context) (result string, err error) {
+	logger.Infof("eth_protocolVersion called")
 
-	client := rpcc.NewRPCClient(rpc.GetThetaRPCEndpoint())
+	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetVersion", trpc.GetVersionArgs{})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
@@ -30,11 +31,11 @@ func (t *RPCAdaptorService) ProtocolVersion(args *ProtocolVersionArgs, result *P
 		return trpcResult.Version, nil
 	}
 
-	resultIntf, err := rpc.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return err
+		return "", err
 	}
-	result.Result = resultIntf.(string)
+	result = resultIntf.(string)
 
-	return nil
+	return result, nil
 }

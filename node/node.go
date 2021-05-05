@@ -5,14 +5,13 @@ import (
 	"sync"
 
 	"github.com/spf13/viper"
-
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
-	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc"
+
+	erpclib "github.com/ethereum/go-ethereum/rpc"
 )
 
 type Node struct {
-	RPC *ethrpc.RPCAdaptorServer
-
 	// Life cycle
 	wg      *sync.WaitGroup
 	quit    chan struct{}
@@ -22,11 +21,10 @@ type Node struct {
 }
 
 func NewNode() *Node {
-	node := &Node{}
-
-	if viper.GetBool(common.CfgRPCEnabled) {
-		node.RPC = ethrpc.NewRPCAdaptorServer()
+	node := &Node{
+		wg: &sync.WaitGroup{},
 	}
+
 	return node
 }
 
@@ -37,18 +35,28 @@ func (n *Node) Start(ctx context.Context) {
 	n.cancel = cancel
 
 	if viper.GetBool(common.CfgRPCEnabled) {
-		n.RPC.Start(n.ctx)
+		rpc.StartServers([]erpclib.API{})
 	}
+
+	n.wg.Add(1)
+	go n.mainLoop()
 }
 
 // Stop notifies all sub components to stop without blocking.
 func (n *Node) Stop() {
 	n.cancel()
+
+	rpc.StopServers()
 }
 
 // Wait blocks until all sub components stop.
 func (n *Node) Wait() {
-	if n.RPC != nil {
-		n.RPC.Wait()
-	}
+	n.wg.Wait()
+}
+
+func (n *Node) mainLoop() {
+	defer n.wg.Done()
+
+	<-n.ctx.Done()
+	n.stopped = true
 }

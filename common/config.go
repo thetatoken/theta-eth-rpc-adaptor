@@ -13,10 +13,14 @@ const (
 
 	// CfgRPCEnabled sets whether to run RPC service.
 	CfgRPCEnabled = "rpc.enabled"
-	// CfgRPCAddress sets the binding address of RPC service.
-	CfgRPCAddress = "rpc.address"
-	// CfgRPCPort sets the port of RPC service.
-	CfgRPCPort = "rpc.port"
+	// CfgRPCHttpAddress sets the binding address of RPC http service.
+	CfgRPCHttpAddress = "rpc.httpAddress"
+	// CfgRPCHttpPort sets the port of RPC http service.
+	CfgRPCHttpPort = "rpc.httpPort"
+	// CfgRPCWSAddress sets the binding address of RPC websocket service.
+	CfgRPCWSAddress = "rpc.wsAddress"
+	// CfgRPCWSPort sets the port of RPC websocket service.
+	CfgRPCWSPort = "rpc.wsPort"
 	// CfgRPCMaxConnections limits concurrent connections accepted by RPC server.
 	CfgRPCMaxConnections = "rpc.maxConnections"
 	// CfgRPCTimeoutSecs set a timeout for RPC.
@@ -33,8 +37,10 @@ func init() {
 	viper.SetDefault(CfgThetaRPCEndpoint, "http://127.0.0.1:16888/rpc")
 
 	viper.SetDefault(CfgRPCEnabled, true)
-	viper.SetDefault(CfgRPCAddress, "127.0.0.1")
-	viper.SetDefault(CfgRPCPort, "18888")
+	viper.SetDefault(CfgRPCHttpAddress, "127.0.0.1")
+	viper.SetDefault(CfgRPCHttpPort, "18888")
+	viper.SetDefault(CfgRPCWSAddress, "127.0.0.1")
+	viper.SetDefault(CfgRPCWSPort, "18889")
 	viper.SetDefault(CfgRPCMaxConnections, 2048)
 	viper.SetDefault(CfgRPCTimeoutSecs, 600)
 

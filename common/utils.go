@@ -1,17 +1,16 @@
-package rpc
+package common
 
 import (
 	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/viper"
-	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
 func GetThetaRPCEndpoint() string {
-	thetaRPCEndpoint := viper.GetString(common.CfgThetaRPCEndpoint)
+	thetaRPCEndpoint := viper.GetString(CfgThetaRPCEndpoint)
 	return thetaRPCEndpoint
 }
 

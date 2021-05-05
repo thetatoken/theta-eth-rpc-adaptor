@@ -56,16 +56,18 @@ Below is an example `config.yaml` file
 theta:
   rpcEndpoint: "http://127.0.0.1:16888/rpc"
 rpc:
-  port: 18888
   enabled: true
-  address: "120.0.0.1"
+  httpAddress: "127.0.0.1"
+  httpPort: 18888
+  wsAddress: "127.0.0.1"
+  wsPort: 18889
   timeoutSecs: 600 
   maxConnections: 2048
 log:
   levels: "*:debug"
 ```
 
-For example, you can change the above `theta.rpcEnpoint` to a remote Theta RPC endpoint, or change `rpc.address` to "0.0.0.0" so the adaptor is accessor from remote IP addresses.
+For example, you can change the above `theta.rpcEnpoint` to a remote Theta RPC endpoint, or change `rpc.httpAddress` to "0.0.0.0" so the adaptor is accessor from remote IP addresses.
 
 ## RPC APIs
 
@@ -73,14 +75,14 @@ The RPC APIs should conform to the Ethereum JSON RPC API standard: https://eth.w
 
 ```
 # Query version
-curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.ProtocolVersion","params":[],"id":67}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_protocolVersion","params":[],"id":67}' http://localhost:18888/rpc
 
 # Query synchronization status
-curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.Syncing","params":[],"id":1}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' http://localhost:18888/rpc
 
 # Query block number
-curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.BlockNumber","params":[],"id":83}' http://localhost:18888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}' http://localhost:18888/rpc
 
 # Query account TFuel balance (should return an integer which represents the current TFuel balance in wei)
-curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth.GetBalance","params":["0x407d73d8a49eeb85d32cf465507dd71d507100c1", "latest"],"id":1}' http://localhost:17888/rpc
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x407d73d8a49eeb85d32cf465507dd71d507100c1", "latest"],"id":1}' http://localhost:17888/rpc
 ```
