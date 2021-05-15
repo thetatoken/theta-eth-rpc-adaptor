@@ -16,6 +16,8 @@ type ethSyncingResult struct {
 	StartingBlock tcommon.JSONUint64 `json:"startingBlock"`
 	CurrentBlock  tcommon.JSONUint64 `json:"currentBlock"`
 	HighestBlock  tcommon.JSONUint64 `json:"highestBlock"`
+	PulledStates  tcommon.JSONUint64 `json:"pulledStates"` //pulledStates is the number it already downloaded
+	KnownStates   tcommon.JSONUint64 `json:"knownStates"`  //knownStates is the number of trie nodes that the sync algo knows about
 }
 type syncingResultWrapper struct {
 	*ethSyncingResult
@@ -37,6 +39,9 @@ func (e *EthRPCService) Syncing(ctx context.Context) (result interface{}, err er
 			re.StartingBlock = 1
 			re.CurrentBlock = trpcResult.CurrentHeight
 			re.HighestBlock = trpcResult.LatestFinalizedBlockHeight
+			//TODO: get excat number from Theta rpc
+			re.PulledStates = trpcResult.CurrentHeight
+			re.KnownStates = trpcResult.CurrentHeight
 		}
 		logger.Infof("jlog3 trpcResult %v, re", trpcResult, re)
 		return re, nil
