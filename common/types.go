@@ -7,7 +7,7 @@ import (
 type Bytes8 [8]byte
 type Bytes256 [256]byte
 
-type eth_GetTransactionResult struct {
+type ethGetTransactionResult struct {
 	BlockHash        tcommon.Hash       `json:"blockHash"`
 	BlockHeight      tcommon.JSONUint64 `json:"blockNumber"`
 	From             tcommon.Address    `json:"from"`
@@ -24,7 +24,7 @@ type eth_GetTransactionResult struct {
 	S                tcommon.Hash       `json:"s"` //ECDSA signature s
 }
 
-type eth_GetBlockResult struct {
+type ethGetBlockResult struct {
 	Height    tcommon.JSONUint64 `json:"number"`
 	Hash      tcommon.Hash       `json:"hash"`
 	Parent    tcommon.Hash       `json:"parentHash"`
