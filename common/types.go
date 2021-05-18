@@ -12,13 +12,13 @@ type EthGetTransactionResult struct {
 	BlockHeight      tcommon.JSONUint64 `json:"blockNumber"`
 	From             tcommon.Address    `json:"from"`
 	To               tcommon.Address    `json:"to"`
-	Gas              tcommon.JSONUint64 `json:"gas"`
-	GasPrice         tcommon.JSONUint64 `json:"gasPrice"`
+	Gas              tcommon.JSONBig    `json:"gas"`
+	GasPrice         tcommon.JSONBig    `json:"gasPrice"`
 	TxHash           tcommon.Hash       `json:"hash"`
 	Nonce            Bytes8             `json:"nonce"`
 	Input            []byte             `json:"input"`
 	TransactionIndex tcommon.JSONUint64 `json:"transactionIndex"`
-	Value            tcommon.JSONUint64 `json:"value"`
+	Value            tcommon.JSONBig    `json:"value"`
 	V                tcommon.JSONUint64 `json:"v"` //ECDSA recovery id
 	R                tcommon.Hash       `json:"r"` //ECDSA signature r
 	S                tcommon.Hash       `json:"s"` //ECDSA signature s
@@ -39,8 +39,8 @@ type EthGetBlockResult struct {
 	Difficulty      tcommon.JSONUint64 `json:"difficulty"`
 	TotalDifficulty tcommon.JSONUint64 `json:"totalDifficulty"`
 	Size            tcommon.JSONUint64 `json:"size"`
-	GasLimit        tcommon.JSONUint64 `json:"gasLimit"`
-	GasUsed         tcommon.JSONUint64 `json:"gasUsed"`
+	GasLimit        tcommon.JSONBig    `json:"gasLimit"`
+	GasUsed         tcommon.JSONBig    `json:"gasUsed"`
 	ExtraData       []byte             `json:"extraData"`
 	Uncles          []tcommon.Hash     `json:"uncles"`
 }
