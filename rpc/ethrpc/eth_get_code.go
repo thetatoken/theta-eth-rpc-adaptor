@@ -3,8 +3,6 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"strconv"
-	"strings"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -14,33 +12,12 @@ import (
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-func str2hex2unit(str string) uint64 {
-	// remove 0x suffix if found in the input string
-	if strings.HasPrefix(str, "0x") {
-		str = strings.TrimPrefix(str, "0x")
-	}
-
-	// base 16 for hexadecimal
-	result, _ := strconv.ParseUint(str, 16, 64)
-	return uint64(result)
-}
-
 // ------------------------------- eth_getCode -----------------------------------
 
 func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string) (result tcommon.Hash, err error) {
 	logger.Infof("eth_getCode called")
 
-	height := tcommon.JSONUint64(0)
-	switch tag {
-	case "latest":
-		height = tcommon.JSONUint64(0)
-	case "earliest":
-		height = tcommon.JSONUint64(1)
-	case "pending":
-		height = tcommon.JSONUint64(0)
-	default:
-		height = tcommon.JSONUint64(str2hex2unit(tag))
-	}
+	height := common.GetHeightByTag(tag)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address, Height: height})
