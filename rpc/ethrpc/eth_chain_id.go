@@ -3,7 +3,6 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -21,9 +20,7 @@ func (e *EthRPCService) ChainId(ctx context.Context) (result string, err error) 
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetStatusResult{}
-		fmt.Printf("trpcResult before, %+v\n", trpcResult)
 		json.Unmarshal(jsonBytes, &trpcResult)
-		fmt.Printf("trpcResult after, %+v\n", trpcResult)
 		return trpcResult.ChainID, nil
 	}
 
