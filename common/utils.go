@@ -3,12 +3,16 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/viper"
 
+	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/ledger/types"
+	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
@@ -58,4 +62,66 @@ func Str2hex2unit(str string) uint64 {
 	// base 16 for hexadecimal
 	result, _ := strconv.ParseUint(str, 16, 64)
 	return uint64(result)
+}
+
+func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
+	sequence, seqErr := GetSeqByAddress(arg.From)
+	if seqErr != nil {
+		utils.Error("Failed to get sequence by address: %v\n", arg.From)
+		return sctxBytes, seqErr
+	}
+	from := types.TxInput{
+		Address: tcommon.HexToAddress(arg.From.String()),
+		Coins: types.Coins{
+			ThetaWei: new(big.Int).SetUint64(0),
+			TFuelWei: new(big.Int).SetUint64(Str2hex2unit(arg.Value)),
+		},
+		Sequence: sequence,
+	}
+
+	to := types.TxOutput{
+		Address: tcommon.HexToAddress(arg.To.String()),
+	}
+
+	gasPrice, ok := types.ParseCoinAmount(arg.GasPrice)
+	if !ok {
+		utils.Error("Failed to parse gas price")
+	}
+
+	sctx := &types.SmartContractTx{
+		From:     from,
+		To:       to,
+		GasLimit: 500000,
+		GasPrice: gasPrice,
+		Data:     []byte(arg.Data),
+	}
+
+	sctxBytes, err = types.TxToBytes(sctx)
+
+	if err != nil {
+		utils.Error("Failed to encode smart contract transaction: %v\n", sctx)
+		return sctxBytes, err
+	}
+	return sctxBytes, nil
+}
+
+func GetSeqByAddress(address tcommon.Address) (sequence uint64, err error) {
+	client := rpcc.NewRPCClient(GetThetaRPCEndpoint())
+
+	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address.String()})
+
+	parse := func(jsonBytes []byte) (interface{}, error) {
+		trpcResult := trpc.GetAccountResult{Account: &types.Account{}}
+		json.Unmarshal(jsonBytes, &trpcResult)
+		return trpcResult.Account.Sequence, nil
+	}
+
+	resultIntf, err := HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+
+	if err != nil {
+		return sequence, err
+	}
+	sequence = resultIntf.(uint64) + 1
+
+	return sequence, nil
 }
