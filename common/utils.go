@@ -64,6 +64,9 @@ func Str2hex2unit(str string) uint64 {
 	return uint64(result)
 }
 
+func Int2hex2str(num int) string {
+	return "0x" + strconv.FormatInt(int64(num), 16)
+}
 func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
