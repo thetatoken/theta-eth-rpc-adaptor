@@ -125,3 +125,21 @@ func GetSeqByAddress(address tcommon.Address) (sequence uint64, err error) {
 
 	return sequence, nil
 }
+
+func GetCurrentHeight() (height tcommon.JSONUint64, err error) {
+	client := rpcc.NewRPCClient(GetThetaRPCEndpoint())
+	rpcRes, rpcErr := client.Call("theta.GetStatus", trpc.GetStatusArgs{})
+
+	parse := func(jsonBytes []byte) (interface{}, error) {
+		trpcResult := trpc.GetStatusResult{}
+		json.Unmarshal(jsonBytes, &trpcResult)
+		return trpcResult.CurrentHeight, nil
+	}
+
+	resultIntf, err := HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+	if err != nil {
+		return height, err
+	}
+	height = resultIntf.(tcommon.JSONUint64)
+	return height, nil
+}

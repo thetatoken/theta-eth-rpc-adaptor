@@ -7,13 +7,13 @@ import (
 	"math/big"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
+	rpcc "github.com/ybbus/jsonrpc"
 
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/ledger/types"
 
 	// "github.com/thetatoken/theta/ledger/types"
 	trpc "github.com/thetatoken/theta/rpc"
-	rpcc "github.com/ybbus/jsonrpc"
 )
 
 type TxTmp struct {
@@ -27,28 +27,17 @@ type TxTmp struct {
 func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error) {
 	logger.Infof("eth_gasPrice called")
 
-	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetStatus", trpc.GetStatusArgs{})
-
-	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetStatusResult{}
-		json.Unmarshal(jsonBytes, &trpcResult)
-		return trpcResult.CurrentHeight, nil
-	}
-
-	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+	currentHeight, err := common.GetCurrentHeight()
 
 	if err != nil {
 		return "", err
 	}
 
-	currentHeight := resultIntf.(tcommon.JSONUint64)
-
 	// fmt.Printf("currentHeight: %v\n", currentHeight)
+	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
+	rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: currentHeight})
 
-	rpcRes, rpcErr = client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: currentHeight})
-
-	parse = func(jsonBytes []byte) (interface{}, error) {
+	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		var objmap map[string]json.RawMessage
@@ -75,7 +64,7 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 		return trpcResult, nil
 	}
 
-	resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
 		return "", err
 	}
