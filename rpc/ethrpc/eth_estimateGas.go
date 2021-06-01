@@ -18,7 +18,7 @@ import (
 
 // ------------------------------- eth_estimateGas -----------------------------------
 
-func (e *EthRPCService) estimateGas(ctx context.Context, argObj ethSmartContractArgObj, tag string) (result string, err error) {
+func (e *EthRPCService) estimateGas(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
 	logger.Infof("eth_estimateGas called")
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())

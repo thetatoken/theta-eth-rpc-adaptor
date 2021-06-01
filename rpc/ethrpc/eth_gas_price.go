@@ -8,7 +8,6 @@ import (
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
-	"github.com/thetatoken/theta/blockchain"
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/ledger/types"
 
@@ -17,11 +16,10 @@ import (
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-type Tx struct {
-	Tx      json.RawMessage            `json:"raw"`
-	Type    byte                       `json:"type"`
-	Hash    tcommon.Hash               `json:"hash"`
-	Receipt *blockchain.TxReceiptEntry `json:"receipt"`
+type TxTmp struct {
+	Tx   json.RawMessage `json:"raw"`
+	Type byte            `json:"type"`
+	Hash tcommon.Hash    `json:"hash"`
 }
 
 // ------------------------------- eth_gasPrice -----------------------------------
@@ -58,13 +56,12 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 		if objmap["transactions"] != nil {
 			//TODO: handle other types
 			txs := []trpc.Tx{}
-			tmpTxs := []Tx{}
+			tmpTxs := []TxTmp{}
 			json.Unmarshal(objmap["transactions"], &tmpTxs)
 			for _, tx := range tmpTxs {
 				newTx := trpc.Tx{}
 				newTx.Type = tx.Type
 				newTx.Hash = tx.Hash
-				newTx.Receipt = tx.Receipt
 				if types.TxType(tx.Type) == types.TxSmartContract {
 					transaction := types.SmartContractTx{}
 					json.Unmarshal(tx.Tx, &transaction)

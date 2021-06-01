@@ -15,18 +15,9 @@ import (
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-type ethSmartContractArgObj struct {
-	From     tcommon.Address `json:"from"`
-	To       tcommon.Address `json:"to"`
-	Gas      string          `json:"gas"`
-	GasPrice string          `json:"gasPrice"`
-	Value    string          `json:"value"`
-	Data     string          `json:"data"`
-}
-
 // ------------------------------- eth_call -----------------------------------
 
-func (e *EthRPCService) Call(ctx context.Context, argObj ethSmartContractArgObj, tag string) (result string, err error) {
+func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
 	logger.Infof("eth_call called")
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
