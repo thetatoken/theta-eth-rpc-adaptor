@@ -44,12 +44,12 @@ func GetHeightByTag(tag string) (height tcommon.JSONUint64) {
 	case "pending":
 		height = tcommon.JSONUint64(0)
 	default:
-		height = tcommon.JSONUint64(str2hex2unit(tag))
+		height = tcommon.JSONUint64(Str2hex2unit(tag))
 	}
 	return height
 }
 
-func str2hex2unit(str string) uint64 {
+func Str2hex2unit(str string) uint64 {
 	// remove 0x suffix if found in the input string
 	if strings.HasPrefix(str, "0x") {
 		str = strings.TrimPrefix(str, "0x")
