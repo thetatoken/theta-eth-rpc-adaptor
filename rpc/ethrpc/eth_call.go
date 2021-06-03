@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -30,6 +31,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
+		fmt.Printf("result: %+v\n", trpcResult)
 		return trpcResult.VmReturn, nil
 	}
 

@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -86,17 +87,21 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 		Address: tcommon.HexToAddress(arg.To.String()),
 	}
 
-	gasPrice, ok := types.ParseCoinAmount(arg.GasPrice)
+	gasPrice, ok := types.ParseCoinAmount(arg.GasPrice + "wei")
 	if !ok {
 		utils.Error("Failed to parse gas price")
+	}
+	data, err := hex.DecodeString(arg.Data)
+	if err != nil {
+		utils.Error("Failed to decode data: %v, err: %v\n", arg.Data, err)
 	}
 
 	sctx := &types.SmartContractTx{
 		From:     from,
 		To:       to,
-		GasLimit: 500000,
+		GasLimit: Str2hex2unit(arg.Gas),
 		GasPrice: gasPrice,
-		Data:     []byte(arg.Data),
+		Data:     data,
 	}
 
 	sctxBytes, err = types.TxToBytes(sctx)
