@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	hexutil "github.com/thetatoken/theta/common/hexutil"
@@ -19,5 +20,6 @@ func (e *EthRPCService) BlockNumber(ctx context.Context) (result string, err err
 	}
 
 	result = hexutil.EncodeUint64(uint64(blockNumber))
+	fmt.Printf("eth_blockNumber result:%+v\n", result)
 	return result, nil
 }
