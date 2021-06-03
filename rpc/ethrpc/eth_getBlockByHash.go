@@ -3,70 +3,54 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/ledger/types"
 
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-type Bytes8 [8]byte
-type Bytes256 [256]byte
-
-type eth_GetBlockResult struct {
-	Height    tcommon.JSONUint64 `json:"number"`
-	Hash      tcommon.Hash       `json:"hash"`
-	Parent    tcommon.Hash       `json:"parentHash"`
-	Timestamp *tcommon.JSONBig   `json:"timestamp"`
-	Proposer  tcommon.Address    `json:"miner"`
-	TxHash    tcommon.Hash       `json:"transactionsRoot"`
-	StateHash tcommon.Hash       `json:"stateRoot"`
-
-	Nonce           Bytes8             `json:"nonce"`
-	Sha3Uncles      tcommon.Hash       `json:"sha3Uncles"`
-	LogsBloom       Bytes256           `json:"logsBloom"`
-	Difficulty      tcommon.JSONUint64 `json:"difficulty"`
-	TotalDifficulty tcommon.JSONUint64 `json:"totalDifficulty"`
-	Size            tcommon.JSONUint64 `json:"size"`
-	GasLimit        tcommon.JSONUint64 `json:"gasLimit"`
-	GasUsed         tcommon.JSONUint64 `json:"gasUsed"`
-	ExtraData       []byte             `json:"extraData"`
-	Uncles          []tcommon.Hash     `json:"uncles"`
-	//TODO : add transactions
-	// Txs  []Tx         `json:"transactions"`
-
-	// ChainID   string             `json:"chain_id"`
-	// Epoch     tcommon.JSONUint64 `json:"epoch"`
-	// HCC                core.CommitCertificate   `json:"hcc"`
-	// GuardianVotes      *core.AggregatedVotes    `json:"guardian_votes"`
-	// EliteEdgeNodeVotes *core.AggregatedEENVotes `json:"elite_edge_node_votes"`
-	// Children []tcommon.Hash   `json:"children"`
-	// Status   core.BlockStatus `json:"status"`
-}
-
 // ------------------------------- eth_getBlockByHash -----------------------------------
-func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, tx bool) (result eth_GetBlockResult, err error) {
+func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, txDetails bool) (result common.EthGetBlockResult, err error) {
 	logger.Infof("eth_getBlockByHash called")
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: tcommon.HexToHash(hashStr)})
-
+	result = common.EthGetBlockResult{}
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
+		logger.Infof("transactions count %d \n", len(trpcResult.Txs))
+		result.Transactions = make([]interface{}, len(trpcResult.Txs))
+		var objmap map[string]json.RawMessage
+		json.Unmarshal(jsonBytes, &objmap)
+		if objmap["transactions"] != nil {
+			var txmaps []map[string]json.RawMessage
+			json.Unmarshal(objmap["transactions"], &txmaps)
+			for i, omap := range txmaps {
+				if types.TxType(trpcResult.Txs[i].Type) == types.TxSmartContract {
+					if txDetails {
+						scTx := types.SmartContractTx{}
+						json.Unmarshal(omap["raw"], &scTx)
+						result.Transactions[i] = scTx
+					}
+					result.GasUsed = tcommon.JSONUint64(trpcResult.Txs[i].Receipt.GasUsed)
+				} else if txDetails && types.TxType(trpcResult.Txs[i].Type) == types.TxSend {
+					sTx := types.SendTx{}
+					json.Unmarshal(omap["raw"], &sTx)
+					result.Transactions[i] = sTx
+				}
+			}
+		}
 		return trpcResult, nil
 	}
-	result = eth_GetBlockResult{}
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
 		return result, err
 	}
-	theta_GetBlockResult, ok := resultIntf.(trpc.GetBlockResult)
-	if !ok {
-		return result, fmt.Errorf("failed to convert GetBlockResult")
-	}
+	theta_GetBlockResult := resultIntf.(trpc.GetBlockResult)
 	result.Height = theta_GetBlockResult.Height
 	result.Hash = theta_GetBlockResult.Hash
 	result.Parent = theta_GetBlockResult.Parent
@@ -74,7 +58,13 @@ func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, tx b
 	result.Proposer = theta_GetBlockResult.Proposer
 	result.TxHash = theta_GetBlockResult.TxHash
 	result.StateHash = theta_GetBlockResult.StateHash
-	//TODO : handle tx
-	//TODO : handle other fields
+	for i, tx := range theta_GetBlockResult.Txs {
+		if txDetails && (types.TxType(tx.Type) == types.TxSmartContract || types.TxType(tx.Type) == types.TxSend) {
+			//already handled
+		} else {
+			result.Transactions[i] = tx.Hash
+		}
+	}
+	result.GasLimit = 20000000
 	return result, nil
 }
