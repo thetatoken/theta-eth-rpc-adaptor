@@ -110,17 +110,22 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	fmt.Printf("blocks: %v\n", blocks)
 
 	for _, block := range blocks {
-		fmt.Printf("txs: %+v", block.Txs)
+		fmt.Printf("txs: %+v\n", block.Txs)
 		for txIndex, tx := range block.Txs {
 			if types.TxType(tx.Type) != types.TxSmartContract {
 				continue
 			}
-			if tx.Receipt != nil {
-				receipt := tx.Receipt
-				fmt.Printf("receipt: %v\n", receipt)
-				for logIndex, log := range receipt.Logs {
+			// if tx.Receipt != nil {
+			receipt := *tx.Receipt
+			fmt.Printf("receipt: %v\n", receipt)
+			fmt.Printf("receipt.Logs: %v\n", receipt.Logs)
+			fmt.Printf("args.topics: %v\n", args.Topics)
+			for logIndex, log := range receipt.Logs {
+				if len(args.Topics) > 0 {
 					for _, topic := range log.Topics {
 						for _, t := range args.Topics {
+							fmt.Printf("topic: %v\n", topic)
+							fmt.Printf("t: %v\n", t)
 							if topic == t {
 								res := EthGetLogsResult{}
 								res.Removed = false
@@ -136,7 +141,21 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 							}
 						}
 					}
+				} else {
+					res := EthGetLogsResult{}
+					res.Removed = false
+					res.LogIndex = common.Int2hex2str(logIndex)
+					res.TransactionIndex = common.Int2hex2str(txIndex)
+					res.TransactionHash = tx.Hash
+					res.BlockHash = block.Hash
+					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
+					res.Address = receipt.ContractAddress
+					res.Data = log.Data
+					res.Topics = log.Topics
+					result = append(result, res)
 				}
+
+				// }
 			}
 		}
 	}
