@@ -18,6 +18,10 @@ func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, txDe
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: tcommon.HexToHash(hashStr)})
+	return GetBlockFromTRPCResult(rpcRes, rpcErr, txDetails)
+}
+
+func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bool) (result common.EthGetBlockResult, err error) {
 	result = common.EthGetBlockResult{}
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetBlockResult{}
