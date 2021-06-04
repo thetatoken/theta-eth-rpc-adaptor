@@ -40,8 +40,8 @@ type EthGetBlockResult struct {
 	Difficulty      tcommon.JSONUint64 `json:"difficulty"`
 	TotalDifficulty tcommon.JSONUint64 `json:"totalDifficulty"`
 	Size            tcommon.JSONUint64 `json:"size"`
-	GasLimit        tcommon.JSONBig    `json:"gasLimit"`
-	GasUsed         tcommon.JSONBig    `json:"gasUsed"`
+	GasLimit        tcommon.JSONUint64 `json:"gasLimit"`
+	GasUsed         tcommon.JSONUint64 `json:"gasUsed"`
 	ExtraData       []byte             `json:"extraData"`
 	Uncles          []tcommon.Hash     `json:"uncles"`
 	Transactions    []interface{}      `json:"transactions"`
