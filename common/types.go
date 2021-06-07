@@ -54,3 +54,12 @@ type EthSyncingResult struct {
 	PulledStates  tcommon.JSONUint64 `json:"pulledStates"` //pulledStates is the number it already downloaded
 	KnownStates   tcommon.JSONUint64 `json:"knownStates"`  //knownStates is the number of trie nodes that the sync algo knows about
 }
+
+type EthSmartContractArgObj struct {
+	From     tcommon.Address `json:"from"`
+	To       tcommon.Address `json:"to"`
+	Gas      string          `json:"gas"`
+	GasPrice string          `json:"gasPrice"`
+	Value    string          `json:"value"`
+	Data     string          `json:"data"`
+}
