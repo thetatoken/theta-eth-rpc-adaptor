@@ -2,11 +2,13 @@ package common
 
 import (
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/common/hexutil"
 )
 
 type Bytes8 [8]byte
 type Bytes256 [256]byte
 
+//TODO: change more tcommon.JSONUint64 to hexutil.Uint64
 type EthGetTransactionResult struct {
 	BlockHash        tcommon.Hash       `json:"blockHash"`
 	BlockHeight      tcommon.JSONUint64 `json:"blockNumber"`
@@ -17,7 +19,7 @@ type EthGetTransactionResult struct {
 	TxHash           tcommon.Hash       `json:"hash"`
 	Nonce            Bytes8             `json:"nonce"`
 	Input            []byte             `json:"input"`
-	TransactionIndex tcommon.JSONUint64 `json:"transactionIndex"`
+	TransactionIndex hexutil.Uint64     `json:"transactionIndex"`
 	Value            tcommon.JSONBig    `json:"value"`
 	V                tcommon.JSONUint64 `json:"v"` //ECDSA recovery id
 	R                tcommon.Hash       `json:"r"` //ECDSA signature r
