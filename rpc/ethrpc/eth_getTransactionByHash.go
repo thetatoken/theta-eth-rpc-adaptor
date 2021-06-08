@@ -8,6 +8,7 @@ import (
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/common/hexutil"
 	"github.com/thetatoken/theta/ledger/types"
 
 	trpc "github.com/thetatoken/theta/rpc"
@@ -84,7 +85,7 @@ type Tx struct {
 	Hash     tcommon.Hash `json:"hash"`
 }
 
-func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, client *rpcc.RPCClient) (tcommon.JSONUint64, error) {
+func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, client *rpcc.RPCClient) (hexutil.Uint64, error) {
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: blockHash})
 	if rpcErr != nil {
 		return 0, rpcErr
@@ -102,10 +103,10 @@ func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, c
 
 	for i, tx := range txs {
 		if tx.Hash == transactionHash {
-			return tcommon.JSONUint64(i + 1), nil
+			return hexutil.Uint64(i), nil
 		}
 	}
-	return 0, fmt.Errorf("Could not find hash for tx")
+	return 0, fmt.Errorf("could not find hash for tx")
 }
 
 func GetRSVfromSignature(data []byte, txResult *common.EthGetTransactionResult) error {
