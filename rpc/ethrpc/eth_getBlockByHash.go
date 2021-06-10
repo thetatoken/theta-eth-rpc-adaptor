@@ -6,6 +6,7 @@ import (
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/common/hexutil"
 	"github.com/thetatoken/theta/ledger/types"
 
 	trpc "github.com/thetatoken/theta/rpc"
@@ -40,7 +41,7 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 						json.Unmarshal(omap["raw"], &scTx)
 						result.Transactions[i] = scTx
 					}
-					result.GasUsed = tcommon.JSONUint64(trpcResult.Txs[i].Receipt.GasUsed)
+					result.GasUsed = hexutil.Uint64(trpcResult.Txs[i].Receipt.GasUsed)
 				} else if txDetails && types.TxType(trpcResult.Txs[i].Type) == types.TxSend {
 					sTx := types.SendTx{}
 					json.Unmarshal(omap["raw"], &sTx)
@@ -55,7 +56,7 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 		return result, err
 	}
 	theta_GetBlockResult := resultIntf.(trpc.GetBlockResult)
-	result.Height = theta_GetBlockResult.Height
+	result.Height = hexutil.Uint64(theta_GetBlockResult.Height)
 	result.Hash = theta_GetBlockResult.Hash
 	result.Parent = theta_GetBlockResult.Parent
 	result.Timestamp = theta_GetBlockResult.Timestamp

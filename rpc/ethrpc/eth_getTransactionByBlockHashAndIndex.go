@@ -36,7 +36,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 		var objmap map[string]json.RawMessage
 		json.Unmarshal(jsonBytes, &objmap)
 		result.BlockHash = trpcResult.Hash
-		result.BlockHeight = trpcResult.Height
+		result.BlockHeight = hexutil.Uint64(trpcResult.Height)
 		if objmap["transactions"] != nil {
 			var txmaps []map[string]json.RawMessage
 			json.Unmarshal(objmap["transactions"], &txmaps)

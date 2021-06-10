@@ -48,7 +48,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	}
 	thetaGetTransactionResult := resultIntf.(trpc.GetTransactionResult)
 	result.BlockHash = thetaGetTransactionResult.BlockHash
-	result.BlockHeight = thetaGetTransactionResult.BlockHeight
+	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
 	result.TxHash = thetaGetTransactionResult.TxHash
 	if thetaGetTransactionResult.Tx != nil {
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSend {
@@ -79,12 +79,6 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	return result, nil
 }
 
-type Tx struct {
-	types.Tx `json:"raw"`
-	Type     byte         `json:"type"`
-	Hash     tcommon.Hash `json:"hash"`
-}
-
 func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, client *rpcc.RPCClient) (hexutil.Uint64, error) {
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: blockHash})
 	if rpcErr != nil {
@@ -96,7 +90,7 @@ func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, c
 	}
 	var objmap map[string]json.RawMessage
 	json.Unmarshal(jsonBytes, &objmap)
-	var txs []Tx
+	var txs []common.Tx
 	if objmap["transactions"] != nil {
 		json.Unmarshal(objmap["transactions"], &txs)
 	}
@@ -112,6 +106,6 @@ func GetTransactionIndex(blockHash tcommon.Hash, transactionHash tcommon.Hash, c
 func GetRSVfromSignature(data []byte, txResult *common.EthGetTransactionResult) error {
 	copy(txResult.R[:], data[0:32])
 	copy(txResult.S[:], data[32:64])
-	txResult.V = tcommon.JSONUint64(data[64])
+	txResult.V = hexutil.Uint64(data[64])
 	return nil
 }
