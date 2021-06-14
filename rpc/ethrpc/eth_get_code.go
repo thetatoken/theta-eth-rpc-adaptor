@@ -18,7 +18,7 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 	height := common.GetHeightByTag(tag)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetCode", trpc.GetAccountArgs{Address: address, Height: height})
+	rpcRes, rpcErr := client.Call("theta.GetCode", trpc.GetCodeArgs{Address: address, Height: height})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetCodeResult{}
