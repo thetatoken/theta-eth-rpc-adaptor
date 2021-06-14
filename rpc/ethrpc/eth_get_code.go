@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
-	tcommon "github.com/thetatoken/theta/common"
-	"github.com/thetatoken/theta/ledger/types"
 
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
@@ -14,18 +12,18 @@ import (
 
 // ------------------------------- eth_getCode -----------------------------------
 
-func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string) (result tcommon.Hash, err error) {
+func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string) (result string, err error) {
 	logger.Infof("eth_getCode called")
 
 	height := common.GetHeightByTag(tag)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address, Height: height})
+	rpcRes, rpcErr := client.Call("theta.GetCode", trpc.GetAccountArgs{Address: address, Height: height})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetAccountResult{Account: &types.Account{}}
+		trpcResult := trpc.GetCodeResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		return trpcResult.Account.CodeHash, nil
+		return trpcResult.Code, nil
 	}
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
@@ -34,6 +32,6 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 		return result, err
 	}
 
-	result = resultIntf.(tcommon.Hash)
+	result = resultIntf.(string)
 	return result, nil
 }
