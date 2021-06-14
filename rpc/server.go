@@ -10,18 +10,21 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/netrpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/web3rpc"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc"})
 
 const (
-	netNamespace = "net"
-	ethNamespace = "eth"
+	netNamespace  = "net"
+	ethNamespace  = "eth"
+	web3Namespace = "web3"
 )
 
 var (
-	HTTPModules = []string{netNamespace, ethNamespace}
-	WSModules   = []string{netNamespace, ethNamespace}
+	HTTPModules = []string{netNamespace, ethNamespace, web3Namespace}
+	WSModules   = []string{netNamespace, ethNamespace, web3Namespace}
 
 	httpListener     net.Listener
 	httpHandler      *erpclib.Server
@@ -96,7 +99,9 @@ func StopServers() error {
 // getAPIs returns all the API methods for the RPC interface
 func getAPIs() []erpclib.API {
 	publicAPIs := []erpclib.API{
+		netrpc.NewNetRPCService(netNamespace),
 		ethrpc.NewEthRPCService(ethNamespace),
+		web3rpc.NewWeb3RPCService(web3Namespace),
 	}
 
 	return publicAPIs

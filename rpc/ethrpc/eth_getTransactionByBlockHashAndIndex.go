@@ -18,7 +18,7 @@ import (
 // ------------------------------- eth_getTransactionByBlockHashAndIndex -----------------------------------
 func (e *EthRPCService) GetTransactionByBlockHashAndIndex(ctx context.Context, hashStr string, txIndexStr string) (result common.EthGetTransactionResult, err error) {
 	logger.Infof("GetTransactionByBlockHashAndIndex called")
-	txIndex := GetHeightByTag(txIndexStr) //TODO: use common
+	txIndex := common.GetHeightByTag(txIndexStr)
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: tcommon.HexToHash(hashStr)})
 	return GetIndexedTransactionFromBlock(rpcRes, rpcErr, txIndex)

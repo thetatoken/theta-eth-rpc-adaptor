@@ -90,3 +90,12 @@ type EthLogObj struct {
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
 	Data             tcommon.Bytes   `json:"data"`
 }
+
+type EthSmartContractArgObj struct {
+	From     tcommon.Address `json:"from"`
+	To       tcommon.Address `json:"to"`
+	Gas      string          `json:"gas"`
+	GasPrice string          `json:"gasPrice"`
+	Value    string          `json:"value"`
+	Data     string          `json:"data"`
+}
