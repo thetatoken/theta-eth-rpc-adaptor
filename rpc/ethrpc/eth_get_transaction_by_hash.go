@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/big"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -55,8 +54,8 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			tx := thetaGetTransactionResult.Tx.(*types.SendTx)
 			result.From = tx.Inputs[0].Address
 			result.To = tx.Outputs[0].Address
-			result.Gas = (tcommon.JSONBig)(*tx.Fee.TFuelWei)
-			result.Value = (tcommon.JSONBig)(*tx.Inputs[0].Coins.TFuelWei)
+			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
+			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 			data := tx.Inputs[0].Signature.ToBytes()
 			GetRSVfromSignature(data, &result)
 		}
@@ -64,9 +63,9 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			tx := thetaGetTransactionResult.Tx.(*types.SmartContractTx)
 			result.From = tx.From.Address
 			result.To = tx.To.Address
-			result.GasPrice = tcommon.JSONBig(*tx.GasPrice)
-			result.Gas = tcommon.JSONBig(*new(big.Int).SetUint64(tx.GasLimit))
-			result.Value = (tcommon.JSONBig)(*tx.From.Coins.TFuelWei)
+			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
+			result.Gas = hexutil.Uint64(tx.GasLimit)
+			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
 			result.Input = tx.Data
 			data := tx.From.Signature.ToBytes()
 			GetRSVfromSignature(data, &result)
