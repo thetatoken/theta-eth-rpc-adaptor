@@ -23,12 +23,14 @@ func (e *EthRPCService) ChainId(ctx context.Context) (result string, err error) 
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetStatus", trpc.GetStatusArgs{})
+	var blockHeight uint64
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetStatusResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		re := chainIDResultWrapper{
 			chainID: trpcResult.ChainID,
 		}
+		blockHeight = uint64(trpcResult.LatestFinalizedBlockHeight)
 		return re, nil
 	}
 
@@ -42,7 +44,7 @@ func (e *EthRPCService) ChainId(ctx context.Context) (result string, err error) 
 	}
 
 	thetaChainID := thetaChainIDResult.chainID
-	ethChainID := types.MapChainID(thetaChainID).Uint64()
+	ethChainID := types.MapChainID(thetaChainID, blockHeight).Uint64()
 	result = hexutil.EncodeUint64(ethChainID)
 
 	return result, nil
