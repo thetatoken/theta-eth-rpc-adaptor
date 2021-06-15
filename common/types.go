@@ -28,13 +28,13 @@ type EthGetTransactionResult struct {
 }
 
 type EthGetBlockResult struct {
-	Height    hexutil.Uint64   `json:"number"`
-	Hash      tcommon.Hash     `json:"hash"`
-	Parent    tcommon.Hash     `json:"parentHash"`
-	Timestamp *tcommon.JSONBig `json:"timestamp"`
-	Proposer  tcommon.Address  `json:"miner"`
-	TxHash    tcommon.Hash     `json:"transactionsRoot"`
-	StateHash tcommon.Hash     `json:"stateRoot"`
+	Height    hexutil.Uint64  `json:"number"`
+	Hash      tcommon.Hash    `json:"hash"`
+	Parent    tcommon.Hash    `json:"parentHash"`
+	Timestamp hexutil.Uint64  `json:"timestamp"`
+	Proposer  tcommon.Address `json:"miner"`
+	TxHash    tcommon.Hash    `json:"transactionsRoot"`
+	StateHash tcommon.Hash    `json:"stateRoot"`
 
 	ReiceptHash     tcommon.Hash   `json:"receiptsRoot"`
 	Nonce           Bytes8         `json:"nonce"`
