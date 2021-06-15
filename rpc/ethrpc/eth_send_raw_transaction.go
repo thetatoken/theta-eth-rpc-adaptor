@@ -16,7 +16,7 @@ func (e *EthRPCService) SendRawTransaction(ctx context.Context, txBytes string) 
 	logger.Infof("eth_sendRawTransaction called")
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.BroadcastRawTransactionAsync", trpc.BroadcastRawTransactionAsyncArgs{TxBytes: txBytes})
+	rpcRes, rpcErr := client.Call("theta.BroadcastRawEthTransactionAsync", trpc.BroadcastRawTransactionAsyncArgs{TxBytes: txBytes})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.BroadcastRawTransactionAsyncResult{}
