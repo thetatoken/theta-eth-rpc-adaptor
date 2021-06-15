@@ -6,11 +6,11 @@ The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which transl
 
 ### On macOS
 
-Install Go and set environment variables `GOPATH` , `GOBIN`, and `PATH`. The current code base should compile with **Go 1.12.1**. On macOS, install Go with the following command
+Install Go and set environment variables `GOPATH` , `GOBIN`, and `PATH`. The current code base should compile with **Go 1.14.2**. On macOS, install Go with the following command
 
 ```
-brew install go@1.12.1
-brew link go@1.12.1 --force
+brew install go@1.14.2
+brew link go@1.14.2 --force
 ```
 
 First clone the `theta` repo following the steps below. Then, clone this repo into your `$GOPATH`. The path should look like this: `$GOPATH/src/github.com/thetatoken/edgecore`
@@ -44,7 +44,7 @@ make windows
 
 ## Run the Adaptor
 
-To run the adaptor, you'd first need to run a Theta node on the same machine with its RPC port opened at 16888. Then, in another terminal, launch the adaptor binary with the following command, assuming the `config.yaml` file is placed under the `<CONFIG_FOLDER>/` folder:
+To run the adaptor, you'd first need to run a Theta node on the same machine with its RPC port opened at 16888 (for now, compile the latest Theta code in the `theta3.0-rpc-compatibility` branch). Then, in another terminal, launch the adaptor binary with the following command, assuming the `config.yaml` file is placed under the `<CONFIG_FOLDER>/` folder:
 
 ```
 theta-eth-rpc-adaptor start --config=<CONFIG_FOLDER>
