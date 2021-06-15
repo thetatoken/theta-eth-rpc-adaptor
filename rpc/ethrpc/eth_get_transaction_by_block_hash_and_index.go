@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/big"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -37,6 +36,8 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 		json.Unmarshal(jsonBytes, &objmap)
 		result.BlockHash = trpcResult.Hash
 		result.BlockHeight = hexutil.Uint64(trpcResult.Height)
+		result.Nonce = hexutil.Uint64(0)
+
 		if objmap["transactions"] != nil {
 			var txmaps []map[string]json.RawMessage
 			json.Unmarshal(objmap["transactions"], &txmaps)
@@ -48,9 +49,9 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 				json.Unmarshal(omap["raw"], &tx)
 				result.From = tx.From.Address
 				result.To = tx.To.Address
-				result.GasPrice = tcommon.JSONBig(*tx.GasPrice)
-				result.Gas = tcommon.JSONBig(*new(big.Int).SetUint64(tx.GasLimit))
-				result.Value = (tcommon.JSONBig)(*tx.From.Coins.TFuelWei)
+				result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
+				result.Gas = hexutil.Uint64(tx.GasLimit)
+				result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
 				result.Input = tx.Data
 				data := tx.From.Signature.ToBytes()
 				GetRSVfromSignature(data, &result)
@@ -59,8 +60,8 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 				json.Unmarshal(omap["raw"], &tx)
 				result.From = tx.Inputs[0].Address
 				result.To = tx.Outputs[0].Address
-				result.Gas = (tcommon.JSONBig)(*tx.Fee.TFuelWei)
-				result.Value = (tcommon.JSONBig)(*tx.Inputs[0].Coins.TFuelWei)
+				result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
+				result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 				data := tx.Inputs[0].Signature.ToBytes()
 				GetRSVfromSignature(data, &result)
 			}

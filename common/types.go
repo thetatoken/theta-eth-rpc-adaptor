@@ -15,26 +15,26 @@ type EthGetTransactionResult struct {
 	BlockHeight      hexutil.Uint64  `json:"blockNumber"`
 	From             tcommon.Address `json:"from"`
 	To               tcommon.Address `json:"to"`
-	Gas              tcommon.JSONBig `json:"gas"`
-	GasPrice         tcommon.JSONBig `json:"gasPrice"`
+	Gas              hexutil.Uint64  `json:"gas"`
+	GasPrice         hexutil.Uint64  `json:"gasPrice"`
 	TxHash           tcommon.Hash    `json:"hash"`
-	Nonce            Bytes8          `json:"nonce"`
+	Nonce            hexutil.Uint64  `json:"nonce"`
 	Input            []byte          `json:"input"`
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Value            tcommon.JSONBig `json:"value"`
+	Value            hexutil.Uint64  `json:"value"`
 	V                hexutil.Uint64  `json:"v"` //ECDSA recovery id
 	R                tcommon.Hash    `json:"r"` //ECDSA signature r
 	S                tcommon.Hash    `json:"s"` //ECDSA signature s
 }
 
 type EthGetBlockResult struct {
-	Height    hexutil.Uint64   `json:"number"`
-	Hash      tcommon.Hash     `json:"hash"`
-	Parent    tcommon.Hash     `json:"parentHash"`
-	Timestamp *tcommon.JSONBig `json:"timestamp"`
-	Proposer  tcommon.Address  `json:"miner"`
-	TxHash    tcommon.Hash     `json:"transactionsRoot"`
-	StateHash tcommon.Hash     `json:"stateRoot"`
+	Height    hexutil.Uint64  `json:"number"`
+	Hash      tcommon.Hash    `json:"hash"`
+	Parent    tcommon.Hash    `json:"parentHash"`
+	Timestamp hexutil.Uint64  `json:"timestamp"`
+	Proposer  tcommon.Address `json:"miner"`
+	TxHash    tcommon.Hash    `json:"transactionsRoot"`
+	StateHash tcommon.Hash    `json:"stateRoot"`
 
 	ReiceptHash     tcommon.Hash   `json:"receiptsRoot"`
 	Nonce           Bytes8         `json:"nonce"`

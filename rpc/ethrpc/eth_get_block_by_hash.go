@@ -59,7 +59,7 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 	result.Height = hexutil.Uint64(theta_GetBlockResult.Height)
 	result.Hash = theta_GetBlockResult.Hash
 	result.Parent = theta_GetBlockResult.Parent
-	result.Timestamp = theta_GetBlockResult.Timestamp
+	result.Timestamp = hexutil.Uint64(theta_GetBlockResult.Timestamp.ToInt().Uint64())
 	result.Proposer = theta_GetBlockResult.Proposer
 	result.TxHash = theta_GetBlockResult.TxHash
 	result.StateHash = theta_GetBlockResult.StateHash
