@@ -63,6 +63,7 @@ type EthGetReceiptResult struct {
 	BlockHeight       hexutil.Uint64  `json:"blockNumber"`
 	TxHash            tcommon.Hash    `json:"transactionHash"`
 	TransactionIndex  hexutil.Uint64  `json:"transactionIndex"`
+	ContractAddress   tcommon.Address `json:"contractAddress"`
 	From              tcommon.Address `json:"from"`
 	To                tcommon.Address `json:"to"`
 	GasUsed           hexutil.Uint64  `json:"gasUsed"`

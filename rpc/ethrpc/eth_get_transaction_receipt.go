@@ -31,16 +31,15 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 			if types.TxType(trpcResult.Type) == types.TxSend {
 				tx := types.SendTx{}
 				json.Unmarshal(objmap["transaction"], &tx)
-				// trpcResult.Tx = &tx
 				result.From = tx.Inputs[0].Address
 				result.To = tx.Outputs[0].Address
 			}
 			if types.TxType(trpcResult.Type) == types.TxSmartContract {
 				tx := types.SmartContractTx{}
 				json.Unmarshal(objmap["transaction"], &tx)
-				// trpcResult.Tx = &tx
 				result.From = tx.From.Address
 				result.To = tx.To.Address
+				result.ContractAddress = trpcResult.Receipt.ContractAddress
 			}
 		}
 		return trpcResult, nil

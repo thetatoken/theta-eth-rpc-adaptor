@@ -27,7 +27,7 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		logger.Infof("transactions count %d \n", len(trpcResult.Txs))
+		// logger.Infof("transactions count %d \n", len(trpcResult.Txs))
 		result.Transactions = make([]interface{}, len(trpcResult.Txs))
 		var objmap map[string]json.RawMessage
 		json.Unmarshal(jsonBytes, &objmap)
