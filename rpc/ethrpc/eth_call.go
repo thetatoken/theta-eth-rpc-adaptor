@@ -8,7 +8,6 @@ import (
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
-	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
@@ -20,7 +19,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
-		utils.Error("Failed to get smart contract bytes: %+v\n", argObj)
+		logger.Errorf("Failed to get smart contract bytes: %+v\n", argObj)
 		return result, err
 	}
 

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
-	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
 	tcommon "github.com/thetatoken/theta/common"
 	hexutil "github.com/thetatoken/theta/common/hexutil"
 
@@ -21,7 +20,7 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
-		utils.Error("Failed to get smart contract bytes: %+v\n", argObj)
+		logger.Errorf("Failed to get smart contract bytes: %+v\n", argObj)
 		return result, err
 	}
 

@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -10,12 +11,14 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
+	log "github.com/sirupsen/logrus"
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/ledger/types"
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
+
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
 
 func GetThetaRPCEndpoint() string {
 	thetaRPCEndpoint := viper.GetString(CfgThetaRPCEndpoint)
@@ -71,7 +74,7 @@ func Int2hex2str(num int) string {
 func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
-		utils.Error("Failed to get sequence by address: %v\n", arg.From)
+		logger.Errorf("Failed to get sequence by address: %v\n", arg.From)
 		return sctxBytes, seqErr
 	}
 	from := types.TxInput{
@@ -89,11 +92,14 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 
 	gasPrice, ok := types.ParseCoinAmount(arg.GasPrice + "wei")
 	if !ok {
-		utils.Error("Failed to parse gas price")
+		err = errors.New("failed to parse gas price")
+		logger.Errorf(fmt.Sprintf("%v", err))
+		return sctxBytes, err
 	}
 	data, err := hex.DecodeString(arg.Data)
 	if err != nil {
-		utils.Error("Failed to decode data: %v, err: %v\n", arg.Data, err)
+		logger.Errorf("Failed to decode data: %v, err: %v\n", arg.Data, err)
+		return sctxBytes, err
 	}
 
 	sctx := &types.SmartContractTx{
@@ -107,7 +113,7 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sctxBytes, err = types.TxToBytes(sctx)
 
 	if err != nil {
-		utils.Error("Failed to encode smart contract transaction: %v\n", sctx)
+		logger.Errorf("Failed to encode smart contract transaction: %v\n", sctx)
 		return sctxBytes, err
 	}
 	return sctxBytes, nil
