@@ -4,22 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/common/hexutil"
 	"github.com/thetatoken/theta/ledger/types"
+	"github.com/thetatoken/theta/rpc"
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
 // ------------------------------- eth_getTransactionReceipt -----------------------------------
 func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr string) (interface{}, error) {
-	logger.Infof("eth_getTransactionReceipt called")
+	logger.Infof("eth_getTransactionReceipt called, txHash: %v", hashStr)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 	result := common.EthGetReceiptResult{}
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
@@ -44,11 +45,32 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		}
 		return trpcResult, nil
 	}
-	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-	if err != nil {
-		return result, err
+
+	var thetaGetTransactionResult trpc.GetTransactionResult
+	maxRetry := 5
+	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
+		logger.Debugf("eth_getTransactionReceipt called, Theta rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
+
+		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err != nil {
+			logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, resultIntf.(string))
+			return result, err
+		}
+
+		thetaGetTransactionResult = resultIntf.(trpc.GetTransactionResult)
+		if thetaGetTransactionResult.Status == rpc.TxStatusFinalized {
+			break
+		}
+
+		errStr := fmt.Sprintf("eth_getTransactionReceipt, tx %v, status: %v", hashStr, thetaGetTransactionResult.Status)
+		logger.Debugf(errStr)
+
+		time.Sleep(6 * time.Second) // one block duration
 	}
-	thetaGetTransactionResult := resultIntf.(trpc.GetTransactionResult)
+
+	logger.Debugf("thetaGetTransactionResult: %v", thetaGetTransactionResult)
+
 	result.BlockHash = thetaGetTransactionResult.BlockHash
 	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
 	result.TxHash = thetaGetTransactionResult.TxHash
@@ -61,12 +83,18 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		result.Logs[i].TxHash = result.TxHash
 		result.Logs[i].LogIndex = hexutil.Uint64(i)
 	}
+
 	//TODO: handle logIndex & TransactionIndex of logs
+	var err error
 	result.TransactionIndex, result.CumulativeGasUsed, err = GetTransactionIndexAndCumulativeGasUsed(result.BlockHash, result.TxHash, result.Logs, client)
 	if err != nil {
+		logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, result)
 		return nil, err
 	}
 	result.Status = 1
+
+	logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
+
 	return result, nil
 }
 
