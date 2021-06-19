@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -37,15 +38,13 @@ type EthGetLogsResult struct {
 // ------------------------------- eth_getLogs -----------------------------------
 
 func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (result []EthGetLogsResult, err error) {
-	logger.Infof("eth_getLogs called")
+	logger.Infof("eth_getLogs called, fromBlock: %v, toBlock: %v, address: %v, blockHash: %v, topics: %v\n",
+		args.FromBlock, args.ToBlock, args.Address, args.Blockhash.Hex(), args.Topics)
 
+	maxRetry := 5
 	blocks := []*trpc.GetBlockResultInner{}
-	fmt.Printf("block hash: %v\n", args.Blockhash)
-	fmt.Printf("block hash.hex: %v\n", args.Blockhash.Hex())
 	if args.Blockhash.Hex() != "0x0000000000000000000000000000000000000000000000000000000000000000" {
-		fmt.Printf("block hash: %v\n", args.Blockhash)
 		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-		rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: args.Blockhash})
 
 		parse := func(jsonBytes []byte) (interface{}, error) {
 			trpcResult := trpc.GetBlockResult{GetBlockResultInner: &trpc.GetBlockResultInner{}}
@@ -60,17 +59,28 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			return trpcResult, nil
 		}
 
-		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-		if err != nil {
-			return result, err
+		var block trpc.GetBlockResult
+		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+			if i == maxRetry {
+				return []EthGetLogsResult{}, fmt.Errorf("failed to retrieve block %v", args.Blockhash.Hex())
+			}
+
+			rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: args.Blockhash})
+			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+			if err == nil {
+				block = resultIntf.(trpc.GetBlockResult)
+				break
+			}
+
+			logger.Warnf("eth_getLogs, theta.GetBlock returned error: %v", err)
+			time.Sleep(blockInterval) // one block duration
 		}
-		block := resultIntf.(trpc.GetBlockResult)
+
 		blocks = append(blocks, block.GetBlockResultInner)
 	} else {
 		blockStart := tcommon.JSONUint64(0)
 		if args.FromBlock != "" {
 			blockStart = common.GetHeightByTag(args.FromBlock)
-			fmt.Printf("blockStart: %v\n", blockStart)
 		}
 
 		blockEnd := tcommon.JSONUint64(0)
@@ -90,10 +100,17 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			}
 			blockEnd = currentHeight
 		}
-		fmt.Printf("blockEnd: %v\n", blockEnd)
+
+		if blockStart > blockEnd {
+			tmp := blockStart
+			blockStart = blockEnd
+			blockEnd = tmp
+		}
+		blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
+
+		logger.Infof("blockStart: %v, blockEnd: %v", blockStart, blockEnd)
 
 		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: blockStart, End: blockEnd})
 
 		parse := func(jsonBytes []byte) (interface{}, error) {
 			trpcResult := trpc.GetBlocksResult{}
@@ -101,31 +118,48 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			return trpcResult, nil
 		}
 
-		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-		if err != nil {
-			return result, err
+		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+			if i == maxRetry {
+				return []EthGetLogsResult{}, fmt.Errorf("failed to retrieve blocks from %v to %v", blockStart, blockEnd)
+			}
+
+			rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: blockStart, End: blockEnd})
+			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+			blocks = resultIntf.(trpc.GetBlocksResult)
+			if err == nil && len(blocks) > 0 {
+				break
+			}
+
+			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
+			time.Sleep(blockInterval) // one block duration
 		}
-		blocks = resultIntf.(trpc.GetBlocksResult)
+
 	}
-	fmt.Printf("blocks: %v\n", blocks)
+	logger.Infof("blocks: %v\n", blocks)
 
 	for _, block := range blocks {
-		fmt.Printf("txs: %+v\n", block.Txs)
+		logger.Infof("txs: %+v\n", block.Txs)
 		for txIndex, tx := range block.Txs {
 			if types.TxType(tx.Type) != types.TxSmartContract {
 				continue
 			}
+
+			if tx.Receipt == nil {
+				logger.Errorf("No receipt for tx: %v", tx.Hash.Hex())
+				continue
+			}
+
 			// if tx.Receipt != nil {
 			receipt := *tx.Receipt
-			fmt.Printf("receipt: %v\n", receipt)
-			fmt.Printf("receipt.Logs: %v\n", receipt.Logs)
-			fmt.Printf("args.topics: %v\n", args.Topics)
+			logger.Infof("receipt: %v\n", receipt)
+			logger.Infof("receipt.Logs: %v\n", receipt.Logs)
+			logger.Infof("args.topics: %v\n", args.Topics)
 			for logIndex, log := range receipt.Logs {
 				if len(args.Topics) > 0 {
 					for _, topic := range log.Topics {
 						for _, t := range args.Topics {
-							fmt.Printf("topic: %v\n", topic)
-							fmt.Printf("t: %v\n", t)
+							logger.Infof("topic: %v\n", topic)
+							logger.Infof("t: %v\n", t)
 							if topic == t {
 								res := EthGetLogsResult{}
 								res.Removed = false

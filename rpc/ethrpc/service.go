@@ -1,9 +1,13 @@
 package ethrpc
 
 import (
+	"time"
+
 	erpclib "github.com/ethereum/go-ethereum/rpc"
 	log "github.com/sirupsen/logrus"
 )
+
+var blockInterval time.Duration = 6 * time.Second
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ethrpc"})
 

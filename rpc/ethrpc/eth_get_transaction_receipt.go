@@ -66,7 +66,7 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		errStr := fmt.Sprintf("eth_getTransactionReceipt, tx %v, status: %v", hashStr, thetaGetTransactionResult.Status)
 		logger.Debugf(errStr)
 
-		time.Sleep(6 * time.Second) // one block duration
+		time.Sleep(blockInterval) // one block duration
 	}
 
 	logger.Debugf("thetaGetTransactionResult: %v", thetaGetTransactionResult)
