@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -15,11 +14,11 @@ import (
 // ------------------------------- eth_call -----------------------------------
 
 func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
-	logger.Infof("eth_call called")
+	logger.Infof("eth_call called, tx: %v", argObj)
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
-		logger.Errorf("Failed to get smart contract bytes: %+v\n", argObj)
+		logger.Errorf("eth_call: Failed to get smart contract bytes: %+v\n", argObj)
 		return result, err
 	}
 
@@ -30,7 +29,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		fmt.Printf("result: %+v\n", trpcResult)
+		logger.Infof("eth_call Theta RPC result: %+v\n", trpcResult)
 		return trpcResult.VmReturn, nil
 	}
 
@@ -38,6 +37,9 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 	if err != nil {
 		return "", err
 	}
-	result = resultIntf.(string)
+	result = "0x" + resultIntf.(string)
+
+	logger.Infof("result: %v\n", result)
+
 	return result, nil
 }

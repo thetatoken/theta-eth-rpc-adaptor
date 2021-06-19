@@ -71,6 +71,13 @@ func Str2hex2unit(str string) uint64 {
 func Int2hex2str(num int) string {
 	return "0x" + strconv.FormatInt(int64(num), 16)
 }
+
+func HexToBytes(hexStr string) ([]byte, error) {
+	trimmedHexStr := strings.TrimPrefix(hexStr, "0x")
+	data, err := hex.DecodeString(trimmedHexStr)
+	return data, err
+}
+
 func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
@@ -96,7 +103,7 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 		logger.Errorf(fmt.Sprintf("%v", err))
 		return sctxBytes, err
 	}
-	data, err := hex.DecodeString(arg.Data)
+	data, err := HexToBytes(arg.Data)
 	if err != nil {
 		logger.Errorf("Failed to decode data: %v, err: %v\n", arg.Data, err)
 		return sctxBytes, err

@@ -20,7 +20,7 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
-		logger.Errorf("Failed to get smart contract bytes: %+v\n", argObj)
+		logger.Errorf("eth_estimateGas: Failed to get smart contract bytes: %+v\n", argObj)
 		return result, err
 	}
 
