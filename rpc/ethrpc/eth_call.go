@@ -14,7 +14,7 @@ import (
 // ------------------------------- eth_call -----------------------------------
 
 func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
-	logger.Infof("eth_call called, tx: %v", argObj)
+	logger.Infof("eth_call called, tx: %+v", argObj)
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {

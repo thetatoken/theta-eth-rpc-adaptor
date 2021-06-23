@@ -82,8 +82,10 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
 		logger.Errorf("Failed to get sequence by address: %v\n", arg.From)
-		return sctxBytes, seqErr
+		// return sctxBytes, seqErr
+		sequence = 1
 	}
+
 	from := types.TxInput{
 		Address: tcommon.HexToAddress(arg.From.String()),
 		Coins: types.Coins{
@@ -97,22 +99,34 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 		Address: tcommon.HexToAddress(arg.To.String()),
 	}
 
-	gasPrice, ok := types.ParseCoinAmount(arg.GasPrice + "wei")
+	gasPriceStr := "0wei"
+	if arg.GasPrice != "" {
+		gasPriceStr = arg.GasPrice + "wei"
+	}
+
+	gasPrice, ok := types.ParseCoinAmount(gasPriceStr)
 	if !ok {
 		err = errors.New("failed to parse gas price")
 		logger.Errorf(fmt.Sprintf("%v", err))
 		return sctxBytes, err
 	}
+
 	data, err := HexToBytes(arg.Data)
 	if err != nil {
 		logger.Errorf("Failed to decode data: %v, err: %v\n", arg.Data, err)
 		return sctxBytes, err
 	}
 
+	gas := uint64(1000000)
+	if arg.Gas != "" {
+		gas = Str2hex2unit(arg.Gas)
+	}
+	fmt.Printf("gas: %v\n", gas)
+
 	sctx := &types.SmartContractTx{
 		From:     from,
 		To:       to,
-		GasLimit: Str2hex2unit(arg.Gas),
+		GasLimit: gas,
 		GasPrice: gasPrice,
 		Data:     data,
 	}
