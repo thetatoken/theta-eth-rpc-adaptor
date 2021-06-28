@@ -52,7 +52,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 				result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
 				result.Gas = hexutil.Uint64(tx.GasLimit)
 				result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
-				result.Input = tx.Data
+				result.Input = tx.Data.String()
 				data := tx.From.Signature.ToBytes()
 				GetRSVfromSignature(data, &result)
 			} else if types.TxType(indexedTx.Type) == types.TxSend {

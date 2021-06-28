@@ -91,7 +91,11 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, result)
 		return nil, err
 	}
-	result.Status = 1
+	if thetaGetTransactionResult.Receipt.EvmErr == "" {
+		result.Status = 1
+	} else {
+		result.Status = 0
+	}
 
 	logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
 
