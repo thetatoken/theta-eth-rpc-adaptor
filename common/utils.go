@@ -82,7 +82,9 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
 		logger.Errorf("Failed to get sequence by address: %v\n", arg.From)
-		// return sctxBytes, seqErr
+		if arg.From.String() != "0x0000000000000000000000000000000000000000" {
+			return sctxBytes, seqErr
+		}
 		sequence = 1
 	}
 
