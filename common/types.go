@@ -9,22 +9,25 @@ import (
 
 type Bytes8 [8]byte
 
+// type Bytes []byte
+
 //TODO: change more tcommon.JSONUint64 to hexutil.Uint64
 type EthGetTransactionResult struct {
-	BlockHash        tcommon.Hash    `json:"blockHash"`
-	BlockHeight      hexutil.Uint64  `json:"blockNumber"`
-	From             tcommon.Address `json:"from"`
-	To               tcommon.Address `json:"to"`
-	Gas              hexutil.Uint64  `json:"gas"`
-	GasPrice         hexutil.Uint64  `json:"gasPrice"`
-	TxHash           tcommon.Hash    `json:"hash"`
-	Nonce            hexutil.Uint64  `json:"nonce"`
-	Input            []byte          `json:"input"`
-	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Value            hexutil.Uint64  `json:"value"`
-	V                hexutil.Uint64  `json:"v"` //ECDSA recovery id
-	R                tcommon.Hash    `json:"r"` //ECDSA signature r
-	S                tcommon.Hash    `json:"s"` //ECDSA signature s
+	BlockHash   tcommon.Hash    `json:"blockHash"`
+	BlockHeight hexutil.Uint64  `json:"blockNumber"`
+	From        tcommon.Address `json:"from"`
+	To          tcommon.Address `json:"to"`
+	Gas         hexutil.Uint64  `json:"gas"`
+	GasPrice    hexutil.Uint64  `json:"gasPrice"`
+	TxHash      tcommon.Hash    `json:"hash"`
+	Nonce       hexutil.Uint64  `json:"nonce"`
+	Input       string          `json:"input"`
+	// Input            tcommon.Bytes   `json:"input"`
+	TransactionIndex hexutil.Uint64 `json:"transactionIndex"`
+	Value            hexutil.Uint64 `json:"value"`
+	V                hexutil.Uint64 `json:"v"` //ECDSA recovery id
+	R                tcommon.Hash   `json:"r"` //ECDSA signature r
+	S                tcommon.Hash   `json:"s"` //ECDSA signature s
 }
 
 type EthGetBlockResult struct {
@@ -45,7 +48,7 @@ type EthGetBlockResult struct {
 	Size            hexutil.Uint64 `json:"size"`
 	GasLimit        hexutil.Uint64 `json:"gasLimit"`
 	GasUsed         hexutil.Uint64 `json:"gasUsed"`
-	ExtraData       []byte         `json:"extraData"`
+	ExtraData       tcommon.Bytes  `json:"extraData"`
 	Uncles          []tcommon.Hash `json:"uncles"`
 	Transactions    []interface{}  `json:"transactions"`
 }
