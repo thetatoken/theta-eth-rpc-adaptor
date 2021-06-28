@@ -57,6 +57,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
 			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 			data := tx.Inputs[0].Signature.ToBytes()
+			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence)
 			GetRSVfromSignature(data, &result)
 		}
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSmartContract {
@@ -66,8 +67,9 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
 			result.Gas = hexutil.Uint64(tx.GasLimit)
 			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
-			result.Input = tx.Data
+			result.Input = tx.Data.String()
 			data := tx.From.Signature.ToBytes()
+			result.Nonce = hexutil.Uint64(tx.From.Sequence)
 			GetRSVfromSignature(data, &result)
 		}
 	}
