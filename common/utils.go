@@ -119,7 +119,7 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 		return sctxBytes, err
 	}
 
-	gas := uint64(1000000)
+	gas := uint64(20000000)
 	if arg.Gas != "" {
 		gas = Str2hex2unit(arg.Gas)
 	}
