@@ -180,3 +180,16 @@ func GetCurrentHeight() (height tcommon.JSONUint64, err error) {
 	height = resultIntf.(tcommon.JSONUint64)
 	return height, nil
 }
+
+func GetErrorMessageFromCallData(str string) (result string, err error) {
+	input, _ := HexToBytes(str)
+	strLength := len(str)
+	errLength, err := strconv.ParseInt(str[72:136], 16, 64)
+	if err != nil {
+		err = fmt.Errorf("Can not get error message length")
+	} else {
+		result = string(input[68 : 68+errLength])
+		logger.Infof("Income strlength is %d, errlen is %d, result is %s \n", strLength, errLength, result)
+	}
+	return
+}
