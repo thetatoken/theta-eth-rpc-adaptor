@@ -15,7 +15,6 @@ import (
 
 func (e *EthRPCService) GetTransactionCount(ctx context.Context, address string, tag string) (result string, err error) {
 	logger.Infof("eth_getTransactionCount called")
-
 	height := common.GetHeightByTag(tag)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
@@ -30,7 +29,7 @@ func (e *EthRPCService) GetTransactionCount(ctx context.Context, address string,
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 
 	if err != nil {
-		return "", err
+		return "0x0", nil
 	}
 
 	// result = fmt.Sprintf("0x%x", resultIntf.(*big.Int))
