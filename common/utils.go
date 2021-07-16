@@ -12,13 +12,19 @@ import (
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/crypto"
 	"github.com/thetatoken/theta/ledger/types"
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
+
+type AddressBook map[string]*crypto.PrivateKey
+
+var TestWallets AddressBook = make(AddressBook)
 
 func GetThetaRPCEndpoint() string {
 	thetaRPCEndpoint := viper.GetString(CfgThetaRPCEndpoint)
@@ -38,7 +44,6 @@ func HandleThetaRPCResponse(rpcRes *rpcc.RPCResponse, rpcErr error, parse func(j
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse theta RPC response: %v, %s", err, string(jsonBytes))
 	}
-
 	result, err = parse(jsonBytes)
 	return
 }
@@ -72,18 +77,24 @@ func Int2hex2str(num int) string {
 	return "0x" + strconv.FormatInt(int64(num), 16)
 }
 
+func HexStr2Uint64(hexStr string) uint64 {
+	cleaned := strings.Replace(hexStr, "0x", "", -1) // remove 0x suffix if found in the input string
+	result, _ := strconv.ParseUint(cleaned, 16, 64)  // base 16 for hexadecimal
+	return uint64(result)
+}
+
 func HexToBytes(hexStr string) ([]byte, error) {
 	trimmedHexStr := strings.TrimPrefix(hexStr, "0x")
 	data, err := hex.DecodeString(trimmedHexStr)
 	return data, err
 }
 
-func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
+func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, err error) {
 	sequence, seqErr := GetSeqByAddress(arg.From)
 	if seqErr != nil {
 		logger.Errorf("Failed to get sequence by address: %v\n", arg.From)
 		if arg.From.String() != "0x0000000000000000000000000000000000000000" {
-			return sctxBytes, seqErr
+			return nil, seqErr
 		}
 		sequence = 1
 	}
@@ -110,13 +121,13 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	if !ok {
 		err = errors.New("failed to parse gas price")
 		logger.Errorf(fmt.Sprintf("%v", err))
-		return sctxBytes, err
+		return nil, err
 	}
 
 	data, err := HexToBytes(arg.Data)
 	if err != nil {
 		logger.Errorf("Failed to decode data: %v, err: %v\n", arg.Data, err)
-		return sctxBytes, err
+		return nil, err
 	}
 
 	gas := uint64(20000000)
@@ -125,16 +136,46 @@ func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
 	}
 	fmt.Printf("gas: %v\n", gas)
 
-	sctx := &types.SmartContractTx{
+	result = &types.SmartContractTx{
 		From:     from,
 		To:       to,
 		GasLimit: gas,
 		GasPrice: gasPrice,
 		Data:     data,
 	}
+	return result, nil
+}
 
+func GetSignedBytes(arg EthSmartContractArgObj, chainID string, blockNumber string) (string, error) {
+	priKey, ok := TestWallets[arg.From.String()]
+	if !ok {
+		return "", fmt.Errorf("testAddress not found : %s", arg.From.String())
+	}
+	fromAddress := tcommon.HexToAddress(arg.From.String())
+	sctx, _ := GenerateSctx(arg)
+	sctxSignBytes := sctx.SignBytes(MapChainID(chainID, blockNumber))
+	signature, err := priKey.Sign(sctxSignBytes)
+	if err != nil {
+		logger.Errorf("Failed to sign transaction: %v, err is %v\n", sctx, err)
+		return "", err
+	}
+
+	sctx.SetSignature(fromAddress, signature)
+	raw, err := types.TxToBytes(sctx)
+	if err != nil {
+		utils.Error("Failed to encode transaction: %v\n", err)
+	}
+	signedTXstr := hex.EncodeToString(raw)
+	return signedTXstr, nil
+}
+
+func GetSctxBytes(arg EthSmartContractArgObj) (sctxBytes []byte, err error) {
+	sctx, err := GenerateSctx(arg)
+	if err != nil {
+		logger.Errorf("Failed to generate smart contract transaction: %v\n", sctx)
+		return sctxBytes, err
+	}
 	sctxBytes, err = types.TxToBytes(sctx)
-
 	if err != nil {
 		logger.Errorf("Failed to encode smart contract transaction: %v\n", sctx)
 		return sctxBytes, err
@@ -179,4 +220,37 @@ func GetCurrentHeight() (height tcommon.JSONUint64, err error) {
 	}
 	height = resultIntf.(tcommon.JSONUint64)
 	return height, nil
+}
+
+func MapChainID(chainIDStr string, blockNumber string) string {
+	if HexStr2Uint64(blockNumber) < tcommon.HeightRPCCompatibility {
+		return mapChainIDWithoutOffset(chainIDStr)
+	}
+	if chainIDStr == "0x160" { // correspond to the Ethereum mainnet
+		return "mainnet"
+	} else if chainIDStr == "0x16b" { // correspond to Ropsten
+		return "testnet_sapphire"
+	} else if chainIDStr == "0x16c" { // correspond to Rinkeby
+		return "testnet_amber"
+	} else if chainIDStr == "0x16d" {
+		return "testnet"
+	} else if chainIDStr == "0x16e" {
+		return "privatenet"
+	}
+	return "" // all other chainIDs
+}
+
+func mapChainIDWithoutOffset(chainIDStr string) string {
+	if chainIDStr == "0x1" { // correspond to the Ethereum mainnet
+		return "mainnet"
+	} else if chainIDStr == "0x3" { // correspond to Ropsten
+		return "testnet_sapphire"
+	} else if chainIDStr == "0x4" { // correspond to Rinkeby
+		return "testnet_amber"
+	} else if chainIDStr == "0x5" {
+		return "testnet"
+	} else if chainIDStr == "0x6" {
+		return "privatenet"
+	}
+	return "" // all other chainIDs
 }
