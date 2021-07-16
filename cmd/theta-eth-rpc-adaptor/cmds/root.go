@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -81,7 +82,7 @@ func checkWallets() {
 		log.Errorf("failed to create test accounts, %v", err)
 		return
 	}
-	if addresesBytes, err := os.ReadFile(keysDirPath + testFile); err == nil {
+	if addresesBytes, err := ioutil.ReadFile(keysDirPath + testFile); err == nil {
 		err = getAccounts(keysDirPath+"/keys", addresesBytes, &common.TestWallets)
 		if err != nil {
 			log.Errorf("failed to get test accounts, %v", err)
@@ -104,7 +105,7 @@ func createAccounts(keyPath string, ab *common.AddressBook) error {
 		copy(accountbytes[i*tcommon.AddressLength:(i+1)*tcommon.AddressLength], address[0:tcommon.AddressLength])
 		fmt.Printf("Successfully created test key: %v\n", address.Hex())
 	}
-	os.WriteFile(keyPath+testFile, accountbytes, 0777)
+	ioutil.WriteFile(keyPath+testFile, accountbytes, 0777)
 	return nil
 }
 
