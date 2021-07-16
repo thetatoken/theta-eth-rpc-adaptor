@@ -30,7 +30,7 @@ func (e *EthRPCService) GetBalance(ctx context.Context, address string, tag stri
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 
 	if err != nil {
-		return "", err
+		return "0x0", nil
 	}
 
 	// result = fmt.Sprintf("0x%x", resultIntf.(*big.Int))

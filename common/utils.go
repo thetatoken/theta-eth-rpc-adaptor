@@ -130,7 +130,7 @@ func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, er
 		return nil, err
 	}
 
-	gas := uint64(20000000)
+	gas := uint64(10000000)
 	if arg.Gas != "" {
 		gas = Str2hex2unit(arg.Gas)
 	}

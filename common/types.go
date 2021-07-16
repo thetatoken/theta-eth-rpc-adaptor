@@ -37,15 +37,15 @@ type EthGetBlockResult struct {
 	StateHash tcommon.Hash    `json:"stateRoot"`
 
 	ReiceptHash     tcommon.Hash   `json:"receiptsRoot"`
-	Nonce           Bytes8         `json:"nonce"`
+	Nonce           string         `json:"nonce"`
 	Sha3Uncles      tcommon.Hash   `json:"sha3Uncles"`
-	LogsBloom       tcommon.Bytes  `json:"logsBloom"`
+	LogsBloom       string         `json:"logsBloom"`
 	Difficulty      hexutil.Uint64 `json:"difficulty"`
 	TotalDifficulty hexutil.Uint64 `json:"totalDifficulty"`
 	Size            hexutil.Uint64 `json:"size"`
 	GasLimit        hexutil.Uint64 `json:"gasLimit"`
 	GasUsed         hexutil.Uint64 `json:"gasUsed"`
-	ExtraData       tcommon.Bytes  `json:"extraData"`
+	ExtraData       string         `json:"extraData"`
 	Uncles          []tcommon.Hash `json:"uncles"`
 	Transactions    []interface{}  `json:"transactions"`
 }

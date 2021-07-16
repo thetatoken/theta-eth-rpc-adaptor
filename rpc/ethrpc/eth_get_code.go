@@ -27,11 +27,14 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 	}
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-
 	if err != nil {
 		return result, err
 	}
 
 	result = resultIntf.(string)
+	if result == "" {
+		result = "0x"
+	}
+
 	return result, nil
 }

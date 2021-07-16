@@ -33,7 +33,10 @@ func (e *EthRPCService) GetStorageAt(ctx context.Context, address string, storag
 	if err != nil {
 		return "", err
 	}
-	result = resultIntf.(string)
 
+	result = resultIntf.(string)
+	if result == "0000000000000000000000000000000000000000000000000000000000000000" {
+		result = "0x0"
+	}
 	return result, nil
 }
