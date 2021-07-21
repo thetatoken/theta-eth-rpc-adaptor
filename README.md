@@ -1,6 +1,34 @@
 # theta-eth-rpc-adaptor
 
-The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which translates the Theta RPC interface to the Ethereum RPC interface.
+The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which translates the Theta RPC interface to the Ethereum RPC interface. We currently support the following Ethereum RPC APIs:
+
+```
+eth_chainId
+eth_syncing
+eth_accounts
+eth_protocolVersion
+eth_getBlockByHash
+eth_getBlockByNumber
+eth_blockNumber
+eth_getUncleByBlockHashAndIndex
+eth_getTransactionByHash
+eth_getTransactionByBlockNumberAndIndex
+eth_getTransactionByBlockHashAndIndex
+eth_getBlockTransactionCountByHash
+eth_getTransactionReceipt
+eth_getBalance
+eth_getStorageAt
+eth_getCode
+eth_getTransactionCount
+eth_getLogs
+eth_getBlockTransactionCountByNumber
+eth_call
+eth_gasPrice
+eth_estimateGas
+eth_sendRawTransaction
+eth_sendTransaction
+net_version
+```
 
 ## Setup
 
