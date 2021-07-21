@@ -16,13 +16,13 @@ brew link go@1.14.2 --force
 First clone the `theta` repo following the steps below. Then, clone this repo into your `$GOPATH`. The path should look like this: `$GOPATH/src/github.com/thetatoken/theta`
 
 ```
-git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 export THETA_HOME=$GOPATH/src/github.com/thetatoken/theta
 cd $THETA_HOME
+git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 
-git clone https://github.com/thetatoken/theta-eth-rpc-adaptor
 export THETA_ETH_RPC_ADAPTOR_HOME=$GOPATH/src/github.com/thetatoken/theta-eth-rpc-adaptor
 cd $THETA_ETH_RPC_ADAPTOR_HOME
+git clone https://github.com/thetatoken/theta-eth-rpc-adaptor
 ```
 
 ## Build and Install
