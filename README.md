@@ -1,34 +1,6 @@
 # theta-eth-rpc-adaptor
 
-The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which translates the Theta RPC interface to the Ethereum RPC interface. We currently support the following Ethereum RPC APIs:
-
-```
-eth_chainId
-eth_syncing
-eth_accounts
-eth_protocolVersion
-eth_getBlockByHash
-eth_getBlockByNumber
-eth_blockNumber
-eth_getUncleByBlockHashAndIndex
-eth_getTransactionByHash
-eth_getTransactionByBlockNumberAndIndex
-eth_getTransactionByBlockHashAndIndex
-eth_getBlockTransactionCountByHash
-eth_getTransactionReceipt
-eth_getBalance
-eth_getStorageAt
-eth_getCode
-eth_getTransactionCount
-eth_getLogs
-eth_getBlockTransactionCountByNumber
-eth_call
-eth_gasPrice
-eth_estimateGas
-eth_sendRawTransaction
-eth_sendTransaction
-net_version
-```
+The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which translates the Theta RPC interface to the Ethereum RPC interface. Please find the currently supported Ethereum RPC APIs [here](https://github.com/thetatoken/theta-eth-rpc-adaptor#rpc-apis).
 
 ## Setup
 
@@ -99,7 +71,37 @@ For example, you can change the above `theta.rpcEnpoint` to a remote Theta RPC e
 
 ## RPC APIs
 
-The RPC APIs should conform to the Ethereum JSON RPC API standard: https://eth.wiki/json-rpc/API
+The RPC APIs should conform to the Ethereum JSON RPC API standard: https://eth.wiki/json-rpc/API. We currently support the following Ethereum RPC APIs:
+
+```
+eth_chainId
+eth_syncing
+eth_accounts
+eth_protocolVersion
+eth_getBlockByHash
+eth_getBlockByNumber
+eth_blockNumber
+eth_getUncleByBlockHashAndIndex
+eth_getTransactionByHash
+eth_getTransactionByBlockNumberAndIndex
+eth_getTransactionByBlockHashAndIndex
+eth_getBlockTransactionCountByHash
+eth_getTransactionReceipt
+eth_getBalance
+eth_getStorageAt
+eth_getCode
+eth_getTransactionCount
+eth_getLogs
+eth_getBlockTransactionCountByNumber
+eth_call
+eth_gasPrice
+eth_estimateGas
+eth_sendRawTransaction
+eth_sendTransaction
+net_version
+```
+
+The following examples demonstrate how to interact with the RPC APIs using the `curl` command:
 
 ```
 # Query version
