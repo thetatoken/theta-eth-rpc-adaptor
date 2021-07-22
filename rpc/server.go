@@ -11,20 +11,18 @@ import (
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/netrpc"
-	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/web3rpc"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc"})
 
 const (
-	netNamespace  = "net"
-	ethNamespace  = "eth"
-	web3Namespace = "web3"
+	netNamespace = "net"
+	ethNamespace = "eth"
 )
 
 var (
-	HTTPModules = []string{netNamespace, ethNamespace, web3Namespace}
-	WSModules   = []string{netNamespace, ethNamespace, web3Namespace}
+	HTTPModules = []string{netNamespace, ethNamespace}
+	WSModules   = []string{netNamespace, ethNamespace}
 
 	httpListener     net.Listener
 	httpHandler      *erpclib.Server
@@ -101,7 +99,6 @@ func getAPIs() []erpclib.API {
 	publicAPIs := []erpclib.API{
 		netrpc.NewNetRPCService(netNamespace),
 		ethrpc.NewEthRPCService(ethNamespace),
-		web3rpc.NewWeb3RPCService(web3Namespace),
 	}
 
 	return publicAPIs
