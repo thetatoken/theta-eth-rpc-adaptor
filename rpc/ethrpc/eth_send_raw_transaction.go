@@ -26,7 +26,7 @@ func (e *EthRPCService) SendRawTransaction(ctx context.Context, txBytes string) 
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		logger.Errorf("eth_sendRawTransaction, err: , result: \n", err, resultIntf.(string))
+		logger.Errorf("eth_sendRawTransaction, err: %v", err)
 		return "", err
 	}
 	result = resultIntf.(string)
