@@ -16,6 +16,7 @@ brew link go@1.14.2 --force
 First clone the `theta` repo following the steps below. Then, clone this repo into your `$GOPATH`. The path should look like this: `$GOPATH/src/github.com/thetatoken/theta`
 
 ```
+mkdir -p $GOPATH/src/github.com/thetatoken 
 cd $GOPATH/src/github.com/thetatoken
 git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 ```
