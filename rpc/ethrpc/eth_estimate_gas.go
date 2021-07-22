@@ -15,7 +15,7 @@ import (
 
 // ------------------------------- eth_estimateGas -----------------------------------
 
-func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
+func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartContractArgObj) (result string, err error) {
 	logger.Infof("eth_estimateGas called")
 
 	sctxBytes, err := common.GetSctxBytes(argObj)

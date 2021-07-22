@@ -84,7 +84,7 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 			totalGasPrice = new(big.Int).Add(transaction.GasPrice, totalGasPrice)
 		}
 	}
-	gasPrice := big.NewInt(10000000000)
+	gasPrice := big.NewInt(4000000000000)
 	if count != 0 {
 		gasPrice = new(big.Int).Div(totalGasPrice, big.NewInt(int64(count)))
 	}

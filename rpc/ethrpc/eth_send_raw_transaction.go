@@ -26,12 +26,12 @@ func (e *EthRPCService) SendRawTransaction(ctx context.Context, txBytes string) 
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		logger.Errorf("eth_sendRawTransaction, err: %v, result: %v", err, resultIntf.(string))
+		logger.Errorf("eth_sendRawTransaction, err: , result: \n", err, resultIntf.(string))
 		return "", err
 	}
 	result = resultIntf.(string)
 
-	logger.Infof("eth_sendRawTransaction, result: %v", result)
+	logger.Infof("eth_sendRawTransaction, result: %v\n", result)
 
 	return result, nil
 }
