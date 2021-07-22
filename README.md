@@ -68,6 +68,7 @@ theta start --config=../privatenet/node --password=qwertyuiop
 Then, open another terminal, create the config folder for the RPC adaptor
 
 ```
+export THETA_ETH_RPC_ADAPTOR_HOME=$GOPATH/src/github.com/thetatoken/theta-eth-rpc-adaptor
 cd $THETA_ETH_RPC_ADAPTOR_HOME
 mkdir ../privatenet/eth-rpc-adaptor
 ```
