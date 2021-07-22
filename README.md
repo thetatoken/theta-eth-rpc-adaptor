@@ -70,7 +70,7 @@ Then, open another terminal, create the config folder for the RPC adaptor
 ```
 export THETA_ETH_RPC_ADAPTOR_HOME=$GOPATH/src/github.com/thetatoken/theta-eth-rpc-adaptor
 cd $THETA_ETH_RPC_ADAPTOR_HOME
-mkdir ../privatenet/eth-rpc-adaptor
+mkdir -p ../privatenet/eth-rpc-adaptor
 ```
 
 Use your favorite editor to open file `../privatenet/eth-rpc-adaptor/config.yaml`, paste in the follow content, save and close the file:
