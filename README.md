@@ -4,16 +4,7 @@ The `theta-eth-rpc-adaptor` project is aiming to provide an adaptor which transl
 
 ## Setup
 
-### On macOS
-
-Install Go and set environment variables `GOPATH` , `GOBIN`, and `PATH`. The current code base should compile with **Go 1.14.2**. On macOS, install Go with the following command
-
-```
-brew install go@1.14.2
-brew link go@1.14.2 --force
-```
-
-First clone the `theta` repo and install Theta following the steps below:
+First, install **Go 1.14.2** and set environment variables `GOPATH` , `GOBIN`, and `PATH`. Next, clone the Theta blockchain repo and install Theta following the steps below:
 
 ```
 mkdir -p $GOPATH/src/github.com/thetatoken 
