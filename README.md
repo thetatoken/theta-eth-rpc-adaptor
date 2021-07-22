@@ -73,7 +73,7 @@ cd $THETA_ETH_RPC_ADAPTOR_HOME
 mkdir ../privatenet/eth-rpc-adaptor
 ```
 
-Use you favorite editor to open file `../privatenet/eth-rpc-adaptor/config.yaml`, paste in the follow content, save and close the file:
+Use your favorite editor to open file `../privatenet/eth-rpc-adaptor/config.yaml`, paste in the follow content, save and close the file:
 
 ```
 theta:
