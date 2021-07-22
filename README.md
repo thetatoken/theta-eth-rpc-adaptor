@@ -97,6 +97,8 @@ cd $THETA_ETH_RPC_ADAPTOR_HOME
 theta-eth-rpc-adaptor start --config=../privatenet/eth-rpc-adaptor
 ```
 
+The RPC adaptor will first create 10 test wallets, which will be useful for running tests with dev tools like Truffle, Hardhat. After the test wallets are created, the ETH RPC APIs will be ready for use.
+
 ## RPC APIs
 
 The RPC APIs should conform to the Ethereum JSON RPC API standard: https://eth.wiki/json-rpc/API. We currently support the following Ethereum RPC APIs:
@@ -132,8 +134,8 @@ net_version
 The following examples demonstrate how to interact with the RPC APIs using the `curl` command:
 
 ```
-# Query version
-curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_protocolVersion","params":[],"id":67}' http://localhost:18888/rpc
+# Query Chain ID
+curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":67}' http://localhost:18888/rpc
 
 # Query synchronization status
 curl -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' http://localhost:18888/rpc
