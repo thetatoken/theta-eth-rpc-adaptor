@@ -16,21 +16,25 @@ brew link go@1.14.2 --force
 First clone the `theta` repo following the steps below. Then, clone this repo into your `$GOPATH`. The path should look like this: `$GOPATH/src/github.com/thetatoken/theta`
 
 ```
-export THETA_HOME=$GOPATH/src/github.com/thetatoken/theta
-cd $THETA_HOME
 git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 
-export THETA_ETH_RPC_ADAPTOR_HOME=$GOPATH/src/github.com/thetatoken/theta-eth-rpc-adaptor
-cd $THETA_ETH_RPC_ADAPTOR_HOME
+```
+
+Next, clone the `theta-eth-rpc-adaptor` repo:
+
+```
 git clone https://github.com/thetatoken/theta-eth-rpc-adaptor
+git checkout theta3.0-rpc-compatibility
 ```
 
 ## Build and Install
 
 ### Build the binary under macOS or Linux
-This should build the `theta-eth-rpc-adaptor` binary and copy it into your `$GOPATH/bin`.
+Following the steps below to build the `theta-eth-rpc-adaptor` binary and copy it into your `$GOPATH/bin`.
 
 ```
+export THETA_ETH_RPC_ADAPTOR_HOME=$GOPATH/src/github.com/thetatoken/theta-eth-rpc-adaptor
+cd $THETA_ETH_RPC_ADAPTOR_HOME
 export GO111MODULE=on
 make install
 ```
@@ -42,15 +46,37 @@ On a macOS machine, the following command should build the `theta-eth-rpc-adapto
 make windows
 ```
 
-## Run the Adaptor
+## Run the Adaptor with a local Theta private testnet
 
-To run the adaptor, you'd first need to run a Theta node on the same machine with its RPC port opened at 16888 (for now, compile the latest Theta code in the `theta3.0-rpc-compatibility` branch). Then, in another terminal, launch the adaptor binary with the following command, assuming the `config.yaml` file is placed under the `<CONFIG_FOLDER>/` folder:
+First compile Theta binary follow the steps below
 
 ```
-theta-eth-rpc-adaptor start --config=<CONFIG_FOLDER>
+export THETA_HOME=$GOPATH/src/github.com/thetatoken/theta
+cd $THETA_HOME
+git checkout theta3.0-rpc-compatibility
+make install
 ```
 
-Below is an example `config.yaml` file
+Next, run a private testnet Theta node on the same machine with its RPC port opened at 16888:
+
+```
+cd $THETA_HOME
+cp -r ./integration/privatenet ../privatenet
+mkdir ~/.thetacli
+cp -r ./integration/privatenet/thetacli/* ~/.thetacli/
+chmod 700 ~/.thetacli/keys/encrypted
+
+theta start --config=../privatenet/node
+```
+
+Then, in another terminal, create the config folder for the RPC adaptor
+
+```
+cd $THETA_ETH_RPC_ADAPTOR_HOME
+mkdir ../privatenet/eth-rpc-adaptor
+```
+
+Use you favorite editor to open file `../privatenet/eth-rpc-adaptor/config.yaml`, paste in the follow content, save and close the file:
 
 ```
 theta:
@@ -67,7 +93,13 @@ log:
   levels: "*:debug"
 ```
 
-For example, you can change the above `theta.rpcEnpoint` to a remote Theta RPC endpoint, or change `rpc.httpAddress` to "0.0.0.0" so the adaptor is accessor from remote IP addresses.
+Then, launch the adaptor binary with the following command:
+
+```
+cd $THETA_ETH_RPC_ADAPTOR_HOME
+mkdir ../privatenet/eth-rpc-adaptor
+theta-eth-rpc-adaptor start --config=../privatenet/eth-rpc-adaptor
+```
 
 ## RPC APIs
 
