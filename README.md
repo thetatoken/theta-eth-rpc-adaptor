@@ -19,6 +19,8 @@ First clone the `theta` repo following the steps below. Then, clone this repo in
 mkdir -p $GOPATH/src/github.com/thetatoken 
 cd $GOPATH/src/github.com/thetatoken
 git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
+cd theta
+git checkout theta3.0-rpc-compatibility
 ```
 
 Next, clone the `theta-eth-rpc-adaptor` repo:
@@ -26,7 +28,6 @@ Next, clone the `theta-eth-rpc-adaptor` repo:
 ```
 cd $GOPATH/src/github.com/thetatoken
 git clone https://github.com/thetatoken/theta-eth-rpc-adaptor
-git checkout theta3.0-rpc-compatibility
 ```
 
 ## Build and Install
