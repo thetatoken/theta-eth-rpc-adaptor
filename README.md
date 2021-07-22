@@ -94,7 +94,6 @@ Then, launch the adaptor binary with the following command:
 
 ```
 cd $THETA_ETH_RPC_ADAPTOR_HOME
-mkdir ../privatenet/eth-rpc-adaptor
 theta-eth-rpc-adaptor start --config=../privatenet/eth-rpc-adaptor
 ```
 
