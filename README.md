@@ -21,6 +21,8 @@ cd $GOPATH/src/github.com/thetatoken
 git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 cd theta
 git checkout theta3.0-rpc-compatibility
+export GO111MODULE=on
+make install
 ```
 
 Next, clone the `theta-eth-rpc-adaptor` repo:
@@ -51,16 +53,7 @@ make windows
 
 ## Run the Adaptor with a local Theta private testnet
 
-First compile Theta binary follow the steps below
-
-```
-export THETA_HOME=$GOPATH/src/github.com/thetatoken/theta
-cd $THETA_HOME
-git checkout theta3.0-rpc-compatibility
-make install
-```
-
-Next, run a private testnet Theta node on the same machine with its RPC port opened at 16888:
+First, run a private testnet Theta node with its RPC port opened at 16888:
 
 ```
 cd $THETA_HOME
@@ -72,7 +65,7 @@ chmod 700 ~/.thetacli/keys/encrypted
 theta start --config=../privatenet/node
 ```
 
-Then, in another terminal, create the config folder for the RPC adaptor
+Then, open another terminal, create the config folder for the RPC adaptor
 
 ```
 cd $THETA_ETH_RPC_ADAPTOR_HOME
