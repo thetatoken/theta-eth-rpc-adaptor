@@ -13,7 +13,7 @@ brew install go@1.14.2
 brew link go@1.14.2 --force
 ```
 
-First clone the `theta` repo following the steps below. Then, clone this repo into your `$GOPATH`. The path should look like this: `$GOPATH/src/github.com/thetatoken/theta`
+First clone the `theta` repo and install Theta following the steps below:
 
 ```
 mkdir -p $GOPATH/src/github.com/thetatoken 
