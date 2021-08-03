@@ -3,6 +3,7 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -15,10 +16,13 @@ import (
 
 // ------------------------------- eth_getBlockByHash -----------------------------------
 func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, txDetails bool) (result common.EthGetBlockResult, err error) {
-	logger.Infof("eth_getBlockByHash called")
+	logger.Infof("eth_getBlockByHash called, blockHash: %v", hashStr)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: tcommon.HexToHash(hashStr)})
+	if rpcErr != nil {
+		logger.Errorf("eth_getBlockByHash, error: %v", rpcErr)
+	}
 	return GetBlockFromTRPCResult(rpcRes, rpcErr, txDetails)
 }
 
@@ -27,7 +31,9 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		// logger.Infof("transactions count %d \n", len(trpcResult.Txs))
+		if trpcResult.GetBlockResultInner == nil {
+			return result, errors.New("empty block")
+		}
 		result.Transactions = make([]interface{}, len(trpcResult.Txs))
 		if txDetails {
 			var objmap map[string]json.RawMessage

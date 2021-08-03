@@ -44,6 +44,8 @@ func HandleThetaRPCResponse(rpcRes *rpcc.RPCResponse, rpcErr error, parse func(j
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse theta RPC response: %v, %s", err, string(jsonBytes))
 	}
+
+	//logger.Infof("HandleThetaRPCResponse, jsonBytes: %v", string(jsonBytes))
 	result, err = parse(jsonBytes)
 	return
 }
@@ -211,7 +213,7 @@ func GetCurrentHeight() (height tcommon.JSONUint64, err error) {
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetStatusResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		return trpcResult.CurrentHeight, nil
+		return trpcResult.LatestFinalizedBlockHeight, nil
 	}
 
 	resultIntf, err := HandleThetaRPCResponse(rpcRes, rpcErr, parse)
