@@ -40,7 +40,7 @@ func (e *EthRPCService) SendTransaction(ctx context.Context, argObj common.EthSm
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		logger.Errorf("eth_sendTransaction, err: %v, result: %v", err, resultIntf.(string))
+		//logger.Errorf("eth_sendTransaction, err: %v, result: %v", err, resultIntf.(string))
 		return "", err
 	}
 	result = resultIntf.(string)

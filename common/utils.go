@@ -199,7 +199,8 @@ func GetSeqByAddress(address tcommon.Address) (sequence uint64, err error) {
 	resultIntf, err := HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 
 	if err != nil {
-		return sequence, err
+		//return sequence, err
+		return 1, nil
 	}
 	sequence = resultIntf.(uint64) + 1
 
