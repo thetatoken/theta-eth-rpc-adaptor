@@ -18,36 +18,48 @@ import (
 // ------------------------------- eth_getTransactionByHash -----------------------------------
 func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string) (result common.EthGetTransactionResult, err error) {
 	logger.Infof("eth_getTransactionByHash called, txHash: %v", hashStr)
-	time.Sleep(blockInterval) // one block duration, wait for block finalization
+
+	result = common.EthGetTransactionResult{}
+	var resultIntf interface{}
+	var thetaGetTransactionResult trpc.GetTransactionResult
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
+	maxRetry := 5
+	for i := 0; i < maxRetry; i++ { // It might take some time for a block to be finalized, retry a few times
+		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 
-	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetTransactionResult{}
-		json.Unmarshal(jsonBytes, &trpcResult)
-		var objmap map[string]json.RawMessage
-		json.Unmarshal(jsonBytes, &objmap)
-		if objmap["transaction"] != nil {
-			if types.TxType(trpcResult.Type) == types.TxSend {
-				tx := types.SendTx{}
-				json.Unmarshal(objmap["transaction"], &tx)
-				trpcResult.Tx = &tx
+		parse := func(jsonBytes []byte) (interface{}, error) {
+			trpcResult := trpc.GetTransactionResult{}
+			json.Unmarshal(jsonBytes, &trpcResult)
+			var objmap map[string]json.RawMessage
+			json.Unmarshal(jsonBytes, &objmap)
+			if objmap["transaction"] != nil {
+				if types.TxType(trpcResult.Type) == types.TxSend {
+					tx := types.SendTx{}
+					json.Unmarshal(objmap["transaction"], &tx)
+					trpcResult.Tx = &tx
+				}
+				if types.TxType(trpcResult.Type) == types.TxSmartContract {
+					tx := types.SmartContractTx{}
+					json.Unmarshal(objmap["transaction"], &tx)
+					trpcResult.Tx = &tx
+				}
 			}
-			if types.TxType(trpcResult.Type) == types.TxSmartContract {
-				tx := types.SmartContractTx{}
-				json.Unmarshal(objmap["transaction"], &tx)
-				trpcResult.Tx = &tx
-			}
+			return trpcResult, nil
 		}
-		return trpcResult, nil
+		resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err != nil {
+			return result, err
+		}
+
+		thetaGetTransactionResult = resultIntf.(trpc.GetTransactionResult)
+		if (thetaGetTransactionResult.BlockHash != tcommon.Hash{}) {
+			break
+		}
+
+		time.Sleep(blockInterval) // one block duration
 	}
-	result = common.EthGetTransactionResult{}
-	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-	if err != nil {
-		return result, err
-	}
-	thetaGetTransactionResult := resultIntf.(trpc.GetTransactionResult)
+
 	result.BlockHash = thetaGetTransactionResult.BlockHash
 	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
 	result.TxHash = thetaGetTransactionResult.TxHash
