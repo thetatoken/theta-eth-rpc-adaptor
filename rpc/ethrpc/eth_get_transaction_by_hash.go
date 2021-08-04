@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -16,7 +17,8 @@ import (
 
 // ------------------------------- eth_getTransactionByHash -----------------------------------
 func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string) (result common.EthGetTransactionResult, err error) {
-	logger.Infof("eth_getTransactionByHash called")
+	logger.Infof("eth_getTransactionByHash called, txHash: %v", hashStr)
+	time.Sleep(blockInterval) // one block duration, wait for block finalization
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
