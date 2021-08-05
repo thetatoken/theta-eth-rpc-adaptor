@@ -33,13 +33,15 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		return trpcResult.VmReturn, nil
 	}
 
+	//logger.Infof("eth_call rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
+
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
 		return "", err
 	}
 	result = "0x" + resultIntf.(string)
 
-	logger.Infof("result: %v\n", result)
+	logger.Infof("eth_call result: %v", result)
 
 	return result, nil
 }
