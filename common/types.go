@@ -89,7 +89,9 @@ type EthLogObj struct {
 	Topics           []tcommon.Hash  `json:"topics"`
 	TxHash           tcommon.Hash    `json:"transactionHash"`
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Data             tcommon.Bytes   `json:"data"`
+	Data             string          `json:"data"`
+	// Data             tcommon.Bytes   `json:"data"`
+
 }
 
 type EthSmartContractArgObj struct {

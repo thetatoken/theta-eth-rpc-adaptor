@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -142,7 +143,7 @@ func GetTransactionIndexAndCumulativeGasUsed(blockHash tcommon.Hash, transaction
 func ThetaLogToEthLog(log *types.Log) common.EthLogObj {
 	result := common.EthLogObj{}
 	result.Address = log.Address
-	result.Data = log.Data
+	result.Data = hex.EncodeToString(log.Data)
 	result.Topics = log.Topics
 	return result
 }
