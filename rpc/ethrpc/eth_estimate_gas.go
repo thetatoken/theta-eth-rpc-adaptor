@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -31,6 +32,9 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
+		if len(trpcResult.VmError) > 0 {
+			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
+		}
 		return trpcResult.GasUsed, nil
 	}
 

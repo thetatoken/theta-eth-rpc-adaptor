@@ -98,7 +98,9 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		result.Status = 0
 	}
 
-	logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
+	//logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
+	resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
+	logger.Debugf("eth_getTransactionReceipt, result: %v", string(resultJsonBytes))
 
 	return result, nil
 }

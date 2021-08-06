@@ -91,6 +91,10 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	if err != nil {
 		return result, err
 	}
+
+	resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
+	logger.Debugf("eth_getTransactionByHash, result: %v", string(resultJsonBytes))
+
 	return result, nil
 }
 
