@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -30,6 +31,9 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		logger.Infof("eth_call Theta RPC result: %+v\n", trpcResult)
+		if len(trpcResult.VmError) > 0 {
+			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
+		}
 		return trpcResult.VmReturn, nil
 	}
 
@@ -37,6 +41,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
+		logger.Infof("eth_call error: %v", err)
 		return "", err
 	}
 	result = "0x" + resultIntf.(string)

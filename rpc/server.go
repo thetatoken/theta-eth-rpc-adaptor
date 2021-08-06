@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
-	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/evmrpc"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/netrpc"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/web3rpc"
 )
@@ -104,7 +103,7 @@ func getAPIs() []erpclib.API {
 		netrpc.NewNetRPCService(netNamespace),
 		ethrpc.NewEthRPCService(ethNamespace),
 		web3rpc.NewWeb3RPCService(web3Namespace),
-		evmrpc.NewEvmRPCService(evmNamespace),
+		//evmrpc.NewEvmRPCService(evmNamespace),
 	}
 
 	return publicAPIs
