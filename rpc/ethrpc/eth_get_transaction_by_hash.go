@@ -71,7 +71,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
 			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 			data := tx.Inputs[0].Signature.ToBytes()
-			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence)
+			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
 		}
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSmartContract {
@@ -83,7 +83,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
 			result.Input = tx.Data.String()
 			data := tx.From.Signature.ToBytes()
-			result.Nonce = hexutil.Uint64(tx.From.Sequence)
+			result.Nonce = hexutil.Uint64(tx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
 		}
 	}

@@ -33,6 +33,7 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		if len(trpcResult.VmError) > 0 {
+			logger.Warnf("eth_estimateGas: EVM execution failed: %v\n", trpcResult.VmError)
 			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
 		}
 		return trpcResult.GasUsed, nil
