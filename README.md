@@ -120,6 +120,7 @@ eth_estimateGas
 eth_sendRawTransaction
 eth_sendTransaction
 net_version
+web3_clientVersion
 ```
 
 The following examples demonstrate how to interact with the RPC APIs using the `curl` command:
