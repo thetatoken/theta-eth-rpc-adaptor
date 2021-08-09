@@ -17,6 +17,7 @@ require (
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/jackpal/gateway v1.0.5
 	github.com/jackpal/go-nat-pmp v1.0.2
+	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/karalabe/hid v0.0.0-20180420081245-2b4488a37358
 	github.com/koron/go-ssdp v0.0.0-20191105050749-2e1c40ed0b5d
 	github.com/libp2p/go-libp2p v0.13.0
@@ -24,6 +25,7 @@ require (
 	github.com/libp2p/go-libp2p-core v0.8.0
 	github.com/libp2p/go-libp2p-crypto v0.1.0
 	github.com/libp2p/go-libp2p-kad-dht v0.11.1
+	github.com/libp2p/go-libp2p-peer v0.2.0 // indirect
 	github.com/libp2p/go-libp2p-peerstore v0.2.6
 	github.com/libp2p/go-libp2p-pubsub v0.4.0
 	github.com/libp2p/go-libp2p-swarm v0.4.0
@@ -45,7 +47,8 @@ require (
 	github.com/smira/go-statsd v1.3.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/objx v0.1.1 // indirect
+	//github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
 	github.com/thetatoken/theta v0.0.0
 	github.com/thetatoken/theta/common v0.0.0
