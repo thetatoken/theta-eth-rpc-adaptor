@@ -46,7 +46,7 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	}
 
 	blockGasLimit := viper.GetUint64(common.CfgThetaBlockGasLimit)
-	estimatedGasWithMargin := 2 * uint64(resultIntf.(tcommon.JSONUint64)) // result should be way below the MAX_UINT_64, so no need to check for overflow
+	estimatedGasWithMargin := uint64(1.1 * float64(resultIntf.(tcommon.JSONUint64))) // result should be way below the MAX_UINT_64, so no need to check for overflow
 	if estimatedGasWithMargin >= blockGasLimit {
 		estimatedGasWithMargin = blockGasLimit
 	}
