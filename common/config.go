@@ -9,7 +9,8 @@ const (
 	CfgConfigPath = "config.path"
 
 	// CfgThetaRPCEndpoint configures the Theta RPC endpoint
-	CfgThetaRPCEndpoint = "theta.rpcEndpoint"
+	CfgThetaRPCEndpoint   = "theta.rpcEndpoint"
+	CfgThetaBlockGasLimit = "theta.blockGasLimit"
 
 	// CfgRPCEnabled sets whether to run RPC service.
 	CfgRPCEnabled = "rpc.enabled"
@@ -35,6 +36,7 @@ const (
 
 func init() {
 	viper.SetDefault(CfgThetaRPCEndpoint, "http://127.0.0.1:16888/rpc")
+	viper.SetDefault(CfgThetaBlockGasLimit, 20000000)
 
 	viper.SetDefault(CfgRPCEnabled, true)
 	viper.SetDefault(CfgRPCHttpAddress, "127.0.0.1")
