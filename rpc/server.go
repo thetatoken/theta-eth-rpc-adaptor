@@ -59,8 +59,8 @@ func StartServers(apis []erpclib.API) error {
 			return err
 		}
 
-		wsAddr := viper.GetString(common.CfgRPCHttpAddress)
-		wsPort := viper.GetString(common.CfgRPCHttpPort)
+		wsAddr := viper.GetString(common.CfgRPCWSAddress)
+		wsPort := viper.GetString(common.CfgRPCWSPort)
 		wsEndpoint = fmt.Sprintf("%v:%v", wsAddr, wsPort)
 		if err := startWS(apis); err != nil {
 			return err
