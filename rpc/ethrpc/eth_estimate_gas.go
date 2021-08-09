@@ -43,6 +43,6 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	if err != nil {
 		return "", err
 	}
-	result = hexutil.EncodeUint64(uint64(resultIntf.(tcommon.JSONUint64)))
+	result = hexutil.EncodeUint64(2 * uint64(resultIntf.(tcommon.JSONUint64)))
 	return result, nil
 }
