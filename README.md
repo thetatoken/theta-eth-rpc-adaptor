@@ -53,7 +53,7 @@ mkdir ~/.thetacli
 cp -r ./integration/privatenet/thetacli/* ~/.thetacli/
 chmod 700 ~/.thetacli/keys/encrypted
 
-theta start --config=../privatenet/node --password=qwertyuiop
+theta start --config=../privatenet/node_eth_rpc --password=qwertyuiop
 ```
 
 Then, open another terminal, create the config folder for the RPC adaptor
