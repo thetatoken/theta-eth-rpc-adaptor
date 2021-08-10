@@ -102,7 +102,7 @@ func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, er
 	}
 
 	from := types.TxInput{
-		Address: tcommon.HexToAddress(arg.From.String()),
+		Address: arg.From, //tcommon.HexToAddress(arg.From.String()),
 		Coins: types.Coins{
 			ThetaWei: new(big.Int).SetUint64(0),
 			TFuelWei: new(big.Int).SetUint64(Str2hex2unit(arg.Value)),
@@ -111,7 +111,7 @@ func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, er
 	}
 
 	to := types.TxOutput{
-		Address: tcommon.HexToAddress(arg.To.String()),
+		Address: arg.To, //tcommon.HexToAddress(arg.To.String()),
 	}
 
 	gasPriceStr := "0wei"
@@ -148,15 +148,20 @@ func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, er
 	return result, nil
 }
 
-func GetSignedBytes(arg EthSmartContractArgObj, chainID string, blockNumber string) (string, error) {
-	priKey, ok := TestWallets[arg.From.String()]
+func SignRawBytes(address string, rawBytes []byte) (result *crypto.Signature, err error) {
+	priKey, ok := TestWallets[address]
 	if !ok {
-		return "", fmt.Errorf("testAddress not found : %s", arg.From.String())
+		return nil, fmt.Errorf("testAddress not found : %s, TestWallets %+v", address, TestWallets)
 	}
+	result, err = priKey.Sign(rawBytes)
+	return
+}
+
+func GetSignedBytes(arg EthSmartContractArgObj, chainID string, blockNumber string) (string, error) {
 	fromAddress := tcommon.HexToAddress(arg.From.String())
 	sctx, _ := GenerateSctx(arg)
 	sctxSignBytes := sctx.SignBytes(MapChainID(chainID, blockNumber))
-	signature, err := priKey.Sign(sctxSignBytes)
+	signature, err := SignRawBytes(strings.ToLower(arg.From.String()), sctxSignBytes)
 	if err != nil {
 		logger.Errorf("Failed to sign transaction: %v, err is %v\n", sctx, err)
 		return "", err

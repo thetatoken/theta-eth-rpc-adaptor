@@ -131,7 +131,6 @@ func GetTransactionIndexAndCumulativeGasUsed(blockHash tcommon.Hash, transaction
 				log := &logs[j]
 				log.LogIndex = hexutil.Uint64(logIndex)
 				log.TransactionIndex = hexutil.Uint64(i)
-				logger.Infof("jlog2 i is %d, log.TransactionIndex is %d, logs[i].TransactionIndex is %d \n", i, log.TransactionIndex, logs[j].TransactionIndex)
 			}
 			return hexutil.Uint64(i), cumulativeGas, nil
 		}

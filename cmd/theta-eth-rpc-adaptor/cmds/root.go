@@ -112,7 +112,7 @@ func createAccounts(keyPath string, ab *common.AddressBook) error {
 func getAccounts(keyPath string, accountbytes []byte, ab *common.AddressBook) error {
 	keystore, err := ks.NewKeystoreEncrypted(keyPath, ks.StandardScryptN, ks.StandardScryptP)
 	if err != nil {
-		log.Fatalf("Failed to create key store: %v", err)
+		log.Fatalf("Failed to open key store: %v", err)
 	}
 	addresses := make([]tcommon.Address, testAmount)
 	for i := 0; i < testAmount; i++ {
@@ -123,7 +123,7 @@ func getAccounts(keyPath string, accountbytes []byte, ab *common.AddressBook) er
 			log.Errorf("Failed to open wallet, err is %v\n", err)
 			return err
 		}
-		(*ab)[addresses[i].Hex()] = nodeKey.PrivateKey
+		(*ab)[strings.ToLower(addresses[i].Hex())] = nodeKey.PrivateKey
 	}
 	return nil
 }
