@@ -11,20 +11,20 @@ type Bytes8 [8]byte
 
 // type Bytes []byte
 type EthGetTransactionResult struct {
-	BlockHash        tcommon.Hash    `json:"blockHash"`
-	BlockHeight      hexutil.Uint64  `json:"blockNumber"`
-	From             tcommon.Address `json:"from"`
-	To               tcommon.Address `json:"to"`
-	Gas              hexutil.Uint64  `json:"gas"`
-	GasPrice         hexutil.Uint64  `json:"gasPrice"`
-	TxHash           tcommon.Hash    `json:"hash"`
-	Nonce            hexutil.Uint64  `json:"nonce"`
-	Input            string          `json:"input"`
-	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Value            hexutil.Uint64  `json:"value"`
-	V                hexutil.Uint64  `json:"v"` //ECDSA recovery id
-	R                tcommon.Hash    `json:"r"` //ECDSA signature r
-	S                tcommon.Hash    `json:"s"` //ECDSA signature s
+	BlockHash        tcommon.Hash     `json:"blockHash"`
+	BlockHeight      hexutil.Uint64   `json:"blockNumber"`
+	From             tcommon.Address  `json:"from"`
+	To               *tcommon.Address `json:"to"`
+	Gas              hexutil.Uint64   `json:"gas"`
+	GasPrice         hexutil.Uint64   `json:"gasPrice"`
+	TxHash           tcommon.Hash     `json:"hash"`
+	Nonce            hexutil.Uint64   `json:"nonce"`
+	Input            string           `json:"input"`
+	TransactionIndex hexutil.Uint64   `json:"transactionIndex"`
+	Value            hexutil.Uint64   `json:"value"`
+	V                hexutil.Uint64   `json:"v"` //ECDSA recovery id
+	R                tcommon.Hash     `json:"r"` //ECDSA signature r
+	S                tcommon.Hash     `json:"s"` //ECDSA signature s
 }
 
 type EthGetBlockResult struct {
@@ -69,7 +69,7 @@ type EthGetReceiptResult struct {
 	GasUsed           hexutil.Uint64  `json:"gasUsed"`
 	CumulativeGasUsed hexutil.Uint64  `json:"cumulativeGasUsed"`
 	Logs              []EthLogObj     `json:"logs"`
-	LogsBloom         tcommon.Bytes   `json:"logsBloom"`
+	LogsBloom         string          `json:"logsBloom"`
 	Status            hexutil.Uint64  `json:"status"`
 }
 
@@ -90,8 +90,7 @@ type EthLogObj struct {
 	TxHash           tcommon.Hash    `json:"transactionHash"`
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
 	Data             string          `json:"data"`
-	// Data             tcommon.Bytes   `json:"data"`
-
+	Type             string          `json:"type"`
 }
 
 type EthSmartContractArgObj struct {

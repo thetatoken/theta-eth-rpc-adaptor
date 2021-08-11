@@ -68,7 +68,11 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSend {
 			tx := thetaGetTransactionResult.Tx.(*types.SendTx)
 			result.From = tx.Inputs[0].Address
-			result.To = tx.Outputs[0].Address
+			if (tx.Outputs[0].Address == tcommon.Address{}) {
+				result.To = nil // conform to ETH standard
+			} else {
+				result.To = &tx.Outputs[0].Address
+			}
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
 			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 			data := tx.Inputs[0].Signature.ToBytes()
@@ -78,7 +82,11 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSmartContract {
 			tx := thetaGetTransactionResult.Tx.(*types.SmartContractTx)
 			result.From = tx.From.Address
-			result.To = tx.To.Address
+			if (tx.To.Address == tcommon.Address{}) {
+				result.To = nil // conform to ETH standard
+			} else {
+				result.To = &tx.To.Address
+			}
 			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
 			result.Gas = hexutil.Uint64(tx.GasLimit)
 			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
