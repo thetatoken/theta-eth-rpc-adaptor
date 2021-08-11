@@ -228,5 +228,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			}
 		}
 	}
+
+	resultJson, _ := json.Marshal(result)
+	logger.Debugf("eth_getLogs, result: %v", string(resultJson))
+
 	return result, nil
 }
