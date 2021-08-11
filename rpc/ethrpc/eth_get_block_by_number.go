@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -15,9 +16,8 @@ func (e *EthRPCService) GetBlockByNumber(ctx context.Context, numberStr string, 
 	logger.Infof("eth_getBlockByNumber called, blockHeight: %v", numberStr)
 	height := common.GetHeightByTag(numberStr)
 
-	if height == 0 {
+	if height == math.MaxUint64 {
 		height, err = common.GetCurrentHeight()
-
 		if err != nil {
 			return result, err
 		}

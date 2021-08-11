@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -86,7 +87,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		blockEnd := tcommon.JSONUint64(0)
 		if args.ToBlock != "" {
 			blockEnd = common.GetHeightByTag(args.ToBlock)
-			if blockEnd == 0 {
+			if blockEnd == math.MaxUint64 {
 				currentHeight, err := common.GetCurrentHeight()
 				if err != nil {
 					return result, err
