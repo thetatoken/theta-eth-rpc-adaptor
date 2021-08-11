@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 
@@ -46,7 +47,20 @@ func GetBlockFromTRPCResult(rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bo
 					if types.TxType(trpcResult.Txs[i].Type) == types.TxSmartContract {
 						scTx := types.SmartContractTx{}
 						json.Unmarshal(omap["raw"], &scTx)
-						result.Transactions = append(result.Transactions, scTx)
+
+						var ethTx common.EthGetTransactionResult
+
+						ethTx.From = scTx.From.Address
+						ethTx.To = scTx.To.Address
+						ethTx.GasPrice = hexutil.Uint64(scTx.GasPrice.Uint64())
+						ethTx.Gas = hexutil.Uint64(scTx.GasLimit)
+						ethTx.Value = hexutil.Uint64(scTx.From.Coins.TFuelWei.Uint64())
+						ethTx.Input = "0x" + hex.EncodeToString(scTx.Data)
+						sigData := scTx.From.Signature.ToBytes()
+						ethTx.Nonce = hexutil.Uint64(scTx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
+						GetRSVfromSignature(sigData, &ethTx)
+
+						result.Transactions = append(result.Transactions, ethTx)
 						result.GasUsed = hexutil.Uint64(trpcResult.Txs[i].Receipt.GasUsed)
 					}
 				}

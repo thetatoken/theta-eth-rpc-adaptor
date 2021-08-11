@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -81,7 +82,8 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
 			result.Gas = hexutil.Uint64(tx.GasLimit)
 			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
-			result.Input = tx.Data.String()
+			//result.Input = tx.Data.String()
+			result.Input = "0x" + hex.EncodeToString(tx.Data)
 			data := tx.From.Signature.ToBytes()
 			result.Nonce = hexutil.Uint64(tx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
