@@ -46,7 +46,7 @@ func HandleThetaRPCResponse(rpcRes *rpcc.RPCResponse, rpcErr error, parse func(j
 		return nil, fmt.Errorf("failed to parse theta RPC response: %v, %s", err, string(jsonBytes))
 	}
 
-	logger.Debugf("HandleThetaRPCResponse, jsonBytes: %v", string(jsonBytes))
+	//logger.Infof("HandleThetaRPCResponse, jsonBytes: %v", string(jsonBytes))
 	result, err = parse(jsonBytes)
 	return
 }
