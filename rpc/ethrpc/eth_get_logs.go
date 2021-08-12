@@ -110,27 +110,25 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 
 		blocks = append(blocks, block.GetBlockResultInner)
 	} else {
-		blockStart := tcommon.JSONUint64(0)
-		if args.FromBlock != "" {
-			blockStart = common.GetHeightByTag(args.FromBlock)
+		currentHeight, err := common.GetCurrentHeight()
+		if err != nil {
+			return result, err
 		}
 
-		blockEnd := tcommon.JSONUint64(0)
+		blockStart := currentHeight
+		if args.FromBlock != "" {
+			blockStart = common.GetHeightByTag(args.FromBlock)
+			if blockStart == math.MaxUint64 {
+				blockStart = currentHeight
+			}
+		}
+
+		blockEnd := currentHeight
 		if args.ToBlock != "" {
 			blockEnd = common.GetHeightByTag(args.ToBlock)
 			if blockEnd == math.MaxUint64 {
-				currentHeight, err := common.GetCurrentHeight()
-				if err != nil {
-					return result, err
-				}
 				blockEnd = currentHeight
 			}
-		} else {
-			currentHeight, err := common.GetCurrentHeight()
-			if err != nil {
-				return result, err
-			}
-			blockEnd = currentHeight
 		}
 
 		if blockStart > blockEnd {
@@ -191,6 +189,13 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			logger.Debugf("receipt: %v\n", receipt)
 			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
 			logger.Debugf("topics: %v\n", topics)
+
+			if (args.Address != tcommon.Address{}) {
+				if receipt.ContractAddress != args.Address {
+					continue
+				}
+			}
+
 			for logIndex, log := range receipt.Logs {
 				if len(topics) > 0 {
 					for _, topic := range log.Topics {
