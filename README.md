@@ -11,7 +11,7 @@ mkdir -p $GOPATH/src/github.com/thetatoken
 cd $GOPATH/src/github.com/thetatoken
 git clone https://github.com/thetatoken/theta-protocol-ledger.git $GOPATH/src/github.com/thetatoken/theta
 cd theta
-git checkout theta3.0-rpc-compatibility
+git checkout privatenet
 export GO111MODULE=on
 make install
 ```
