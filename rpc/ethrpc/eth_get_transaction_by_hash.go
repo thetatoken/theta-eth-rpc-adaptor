@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -63,7 +64,17 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 
 	result.BlockHash = thetaGetTransactionResult.BlockHash
 	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
-	result.TxHash = thetaGetTransactionResult.TxHash
+
+	trimmedHashStr := hashStr
+	if strings.HasPrefix(hashStr, "0x") {
+		trimmedHashStr = hashStr[2:]
+	}
+	txHash, _ := hex.DecodeString(trimmedHashStr)
+	result.TxHash = tcommon.BytesToHash(txHash) // For ethers.js compatibility, need to return the ETH tx hash (i.e. the query parameter)
+
+	logger.Infof("eth_getTransactionByHash, hashStr: %v, result.TxHash: %v", hashStr, result.TxHash.Hex())
+
+	nativeTxHash := thetaGetTransactionResult.TxHash // need use native tx hash to find the tx index, instead of the ETH tx hash
 	if thetaGetTransactionResult.Tx != nil {
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSend {
 			tx := thetaGetTransactionResult.Tx.(*types.SendTx)
@@ -97,13 +108,13 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			GetRSVfromSignature(data, &result)
 		}
 	}
-	result.TransactionIndex, err = GetTransactionIndex(result.BlockHash, result.TxHash, client)
+	result.TransactionIndex, err = GetTransactionIndex(result.BlockHash, nativeTxHash, client)
 	if err != nil {
 		return result, err
 	}
 
-	resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
-	logger.Debugf("eth_getTransactionByHash, result: %v", string(resultJsonBytes))
+	//resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
+	//logger.Infof("eth_getTransactionByHash, result: %v", string(resultJsonBytes))
 
 	return result, nil
 }
