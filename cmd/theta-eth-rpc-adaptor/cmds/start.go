@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/node"
-	"github.com/thetatoken/theta/version"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/version"
 )
 
 // startCmd represents the start command
