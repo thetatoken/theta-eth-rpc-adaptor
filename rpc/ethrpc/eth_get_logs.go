@@ -74,26 +74,24 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
 
-		trpcResult := trpc.GetBlockResult{GetBlockResultInner: &trpc.GetBlockResultInner{}}
+		trpcResult := common.ThetaGetBlockResult{ThetaGetBlockResultInner: &common.ThetaGetBlockResultInner{}}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		var objmap map[string]json.RawMessage
 		json.Unmarshal(jsonBytes, &objmap)
 		if objmap["transactions"] != nil {
 			txs := []trpc.Tx{}
 			json.Unmarshal(objmap["transactions"], &txs)
-			for _, tx := range txs {
-				trpcResult.Txs = append(trpcResult.Txs, tx)
-			}
+			trpcResult.Txs = txs
 		}
 		return trpcResult, nil
 	}
 
 	maxRetry := 5
-	blocks := []*trpc.GetBlockResultInner{}
+	blocks := []*common.ThetaGetBlockResultInner{}
 	if args.Blockhash.Hex() != "0x0000000000000000000000000000000000000000000000000000000000000000" {
 		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 
-		var block trpc.GetBlockResult
+		var block common.ThetaGetBlockResult
 		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
 			if i == maxRetry {
 				return []EthGetLogsResult{}, fmt.Errorf("failed to retrieve block %v", args.Blockhash.Hex())
@@ -102,7 +100,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: args.Blockhash})
 			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 			if err == nil {
-				block = resultIntf.(trpc.GetBlockResult)
+				block = resultIntf.(common.ThetaGetBlockResult)
 				break
 			}
 
@@ -110,7 +108,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			time.Sleep(blockInterval) // one block duration
 		}
 
-		blocks = append(blocks, block.GetBlockResultInner)
+		blocks = append(blocks, block.ThetaGetBlockResultInner)
 	} else {
 		currentHeight, err := common.GetCurrentHeight()
 		if err != nil {
@@ -156,13 +154,13 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 				resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 				if err != nil {
 					success = false
-					blocks = []*trpc.GetBlockResultInner{}
+					blocks = []*common.ThetaGetBlockResultInner{}
 					logger.Warnf("eth_getLogs, theta.GetBlocksByHeight returned error: %v", err)
 					break
 				}
 
-				block := resultIntf.(trpc.GetBlockResult)
-				blocks = append(blocks, block.GetBlockResultInner)
+				block := resultIntf.(common.ThetaGetBlockResult)
+				blocks = append(blocks, block.ThetaGetBlockResultInner)
 			}
 
 			if success {
@@ -176,8 +174,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
-		for txIndex, txi := range block.Txs {
-			tx := txi.(trpc.Tx)
+		for txIndex, tx := range block.Txs {
 			if types.TxType(tx.Type) != types.TxSmartContract {
 				continue
 			}

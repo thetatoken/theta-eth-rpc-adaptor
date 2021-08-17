@@ -38,7 +38,7 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 	rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: currentHeight})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetBlockResult{}
+		trpcResult := common.ThetaGetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		var objmap map[string]json.RawMessage
 		json.Unmarshal(jsonBytes, &objmap)
@@ -59,9 +59,7 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 				}
 				txs = append(txs, newTx)
 			}
-			for _, tx := range txs {
-				trpcResult.Txs = append(trpcResult.Txs, tx)
-			}
+			trpcResult.Txs = txs
 		}
 		return trpcResult, nil
 	}
@@ -70,14 +68,13 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 	if err != nil {
 		return "", err
 	}
-	thetaGetBlockResult, ok := resultIntf.(trpc.GetBlockResult)
+	thetaGetBlockResult, ok := resultIntf.(common.ThetaGetBlockResult)
 	if !ok {
 		return "", fmt.Errorf("failed to convert GetBlockResult")
 	}
 	totalGasPrice := big.NewInt(0)
 	count := 0
-	for _, txi := range thetaGetBlockResult.Txs {
-		tx := txi.(trpc.Tx)
+	for _, tx := range thetaGetBlockResult.Txs {
 		if types.TxType(tx.Type) != types.TxSmartContract {
 			continue
 		}
