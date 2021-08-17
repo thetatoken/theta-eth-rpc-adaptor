@@ -81,7 +81,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		if objmap["transactions"] != nil {
 			txs := []trpc.Tx{}
 			json.Unmarshal(objmap["transactions"], &txs)
-			trpcResult.Txs = txs
+			for _, tx := range txs {
+				trpcResult.Txs = append(trpcResult.Txs, tx)
+			}
 		}
 		return trpcResult, nil
 	}
@@ -174,7 +176,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
-		for txIndex, tx := range block.Txs {
+		for txIndex, txi := range block.Txs {
+			tx := txi.(trpc.Tx)
 			if types.TxType(tx.Type) != types.TxSmartContract {
 				continue
 			}

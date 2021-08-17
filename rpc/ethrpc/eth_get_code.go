@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math"
+	"strings"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -38,6 +39,10 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 	result = resultIntf.(string)
 	if result == "" {
 		result = "0x"
+	}
+
+	if !strings.HasPrefix(result, "0x") {
+		result = "0x" + result
 	}
 
 	return result, nil

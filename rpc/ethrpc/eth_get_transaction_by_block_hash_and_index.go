@@ -41,7 +41,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 		if objmap["transactions"] != nil {
 			var txmaps []map[string]json.RawMessage
 			json.Unmarshal(objmap["transactions"], &txmaps)
-			indexedTx := trpcResult.Txs[txIndex]
+			indexedTx := trpcResult.Txs[txIndex].(trpc.Tx)
 			omap := txmaps[txIndex]
 			result.TxHash = indexedTx.Hash
 			if types.TxType(indexedTx.Type) == types.TxSmartContract {

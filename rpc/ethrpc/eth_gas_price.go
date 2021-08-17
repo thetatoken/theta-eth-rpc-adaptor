@@ -59,7 +59,9 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 				}
 				txs = append(txs, newTx)
 			}
-			trpcResult.Txs = txs
+			for _, tx := range txs {
+				trpcResult.Txs = append(trpcResult.Txs, tx)
+			}
 		}
 		return trpcResult, nil
 	}
@@ -74,7 +76,8 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 	}
 	totalGasPrice := big.NewInt(0)
 	count := 0
-	for _, tx := range thetaGetBlockResult.Txs {
+	for _, txi := range thetaGetBlockResult.Txs {
+		tx := txi.(trpc.Tx)
 		if types.TxType(tx.Type) != types.TxSmartContract {
 			continue
 		}
