@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/node"
+	"github.com/thetatoken/theta/version"
 )
 
 // startCmd represents the start command
@@ -25,8 +26,13 @@ func init() {
 }
 
 func runStart(cmd *cobra.Command, args []string) {
+	log.Infof("Version %v %s", version.Version, version.GitHash)
+	log.Infof("Built at %s", version.Timestamp)
+
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())
+
+	checkWallets()
 
 	n := node.NewNode()
 
