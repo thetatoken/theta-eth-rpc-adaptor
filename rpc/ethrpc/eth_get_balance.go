@@ -3,6 +3,7 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"math/big"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -17,6 +18,9 @@ func (e *EthRPCService) GetBalance(ctx context.Context, address string, tag stri
 	logger.Infof("eth_getBalance called")
 
 	height := common.GetHeightByTag(tag)
+	if height == math.MaxUint64 {
+		height = 0 // 0 is interpreted as the last height by the theta.GetAccount method
+	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address, Height: height})

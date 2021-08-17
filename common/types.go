@@ -2,29 +2,32 @@ package common
 
 import (
 	"github.com/thetatoken/theta/blockchain"
+	"github.com/thetatoken/theta/common"
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/common/hexutil"
+	tcore "github.com/thetatoken/theta/core"
 	"github.com/thetatoken/theta/ledger/types"
+	trpc "github.com/thetatoken/theta/rpc"
 )
 
 type Bytes8 [8]byte
 
 // type Bytes []byte
 type EthGetTransactionResult struct {
-	BlockHash        tcommon.Hash    `json:"blockHash"`
-	BlockHeight      hexutil.Uint64  `json:"blockNumber"`
-	From             tcommon.Address `json:"from"`
-	To               tcommon.Address `json:"to"`
-	Gas              hexutil.Uint64  `json:"gas"`
-	GasPrice         hexutil.Uint64  `json:"gasPrice"`
-	TxHash           tcommon.Hash    `json:"hash"`
-	Nonce            hexutil.Uint64  `json:"nonce"`
-	Input            string          `json:"input"`
-	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Value            hexutil.Uint64  `json:"value"`
-	V                hexutil.Uint64  `json:"v"` //ECDSA recovery id
-	R                tcommon.Hash    `json:"r"` //ECDSA signature r
-	S                tcommon.Hash    `json:"s"` //ECDSA signature s
+	BlockHash        tcommon.Hash     `json:"blockHash"`
+	BlockHeight      hexutil.Uint64   `json:"blockNumber"`
+	From             tcommon.Address  `json:"from"`
+	To               *tcommon.Address `json:"to"`
+	Gas              hexutil.Uint64   `json:"gas"`
+	GasPrice         hexutil.Uint64   `json:"gasPrice"`
+	TxHash           tcommon.Hash     `json:"hash"`
+	Nonce            hexutil.Uint64   `json:"nonce"`
+	Input            string           `json:"input"`
+	TransactionIndex hexutil.Uint64   `json:"transactionIndex"`
+	Value            hexutil.Uint64   `json:"value"`
+	V                hexutil.Uint64   `json:"v"` //ECDSA recovery id
+	R                tcommon.Hash     `json:"r"` //ECDSA signature r
+	S                tcommon.Hash     `json:"s"` //ECDSA signature s
 }
 
 type EthGetBlockResult struct {
@@ -69,7 +72,7 @@ type EthGetReceiptResult struct {
 	GasUsed           hexutil.Uint64  `json:"gasUsed"`
 	CumulativeGasUsed hexutil.Uint64  `json:"cumulativeGasUsed"`
 	Logs              []EthLogObj     `json:"logs"`
-	LogsBloom         tcommon.Bytes   `json:"logsBloom"`
+	LogsBloom         string          `json:"logsBloom"`
 	Status            hexutil.Uint64  `json:"status"`
 }
 
@@ -89,7 +92,8 @@ type EthLogObj struct {
 	Topics           []tcommon.Hash  `json:"topics"`
 	TxHash           tcommon.Hash    `json:"transactionHash"`
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
-	Data             tcommon.Bytes   `json:"data"`
+	Data             string          `json:"data"`
+	Type             string          `json:"type"`
 }
 
 type EthSmartContractArgObj struct {
@@ -99,4 +103,29 @@ type EthSmartContractArgObj struct {
 	GasPrice string          `json:"gasPrice"`
 	Value    string          `json:"value"`
 	Data     string          `json:"data"`
+}
+
+type ThetaGetBlockResult struct {
+	*ThetaGetBlockResultInner
+}
+type ThetaGetBlocksResult []*ThetaGetBlockResultInner
+
+type ThetaGetBlockResultInner struct {
+	ChainID            string                    `json:"chain_id"`
+	Epoch              tcommon.JSONUint64        `json:"epoch"`
+	Height             tcommon.JSONUint64        `json:"height"`
+	Parent             tcommon.Hash              `json:"parent"`
+	TxHash             tcommon.Hash              `json:"transactions_hash"`
+	StateHash          tcommon.Hash              `json:"state_hash"`
+	Timestamp          *tcommon.JSONBig          `json:"timestamp"`
+	Proposer           tcommon.Address           `json:"proposer"`
+	HCC                tcore.CommitCertificate   `json:"hcc"`
+	GuardianVotes      *tcore.AggregatedVotes    `json:"guardian_votes"`
+	EliteEdgeNodeVotes *tcore.AggregatedEENVotes `json:"elite_edge_node_votes"`
+
+	Children []common.Hash     `json:"children"`
+	Status   tcore.BlockStatus `json:"status"`
+
+	Hash common.Hash `json:"hash"`
+	Txs  []trpc.Tx   `json:"transactions"`
 }

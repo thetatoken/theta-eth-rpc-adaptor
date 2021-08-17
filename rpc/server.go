@@ -11,18 +11,21 @@ import (
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/ethrpc"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/netrpc"
+	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/web3rpc"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc"})
 
 const (
-	netNamespace = "net"
-	ethNamespace = "eth"
+	netNamespace  = "net"
+	ethNamespace  = "eth"
+	web3Namespace = "web3"
+	evmNamespace  = "evm"
 )
 
 var (
-	HTTPModules = []string{netNamespace, ethNamespace}
-	WSModules   = []string{netNamespace, ethNamespace}
+	HTTPModules = []string{netNamespace, ethNamespace, web3Namespace, evmNamespace}
+	WSModules   = []string{netNamespace, ethNamespace, web3Namespace, evmNamespace}
 
 	httpListener     net.Listener
 	httpHandler      *erpclib.Server
@@ -56,8 +59,8 @@ func StartServers(apis []erpclib.API) error {
 			return err
 		}
 
-		wsAddr := viper.GetString(common.CfgRPCHttpAddress)
-		wsPort := viper.GetString(common.CfgRPCHttpPort)
+		wsAddr := viper.GetString(common.CfgRPCWSAddress)
+		wsPort := viper.GetString(common.CfgRPCWSPort)
 		wsEndpoint = fmt.Sprintf("%v:%v", wsAddr, wsPort)
 		if err := startWS(apis); err != nil {
 			return err
@@ -99,6 +102,8 @@ func getAPIs() []erpclib.API {
 	publicAPIs := []erpclib.API{
 		netrpc.NewNetRPCService(netNamespace),
 		ethrpc.NewEthRPCService(ethNamespace),
+		web3rpc.NewWeb3RPCService(web3Namespace),
+		//evmrpc.NewEvmRPCService(evmNamespace),
 	}
 
 	return publicAPIs

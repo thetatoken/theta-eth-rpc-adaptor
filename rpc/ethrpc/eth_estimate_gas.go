@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
+	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
 	hexutil "github.com/thetatoken/theta/common/hexutil"
@@ -31,6 +33,10 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
+		if len(trpcResult.VmError) > 0 {
+			logger.Warnf("eth_estimateGas: EVM execution failed: %v\n", trpcResult.VmError)
+			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
+		}
 		return trpcResult.GasUsed, nil
 	}
 
@@ -38,6 +44,12 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	if err != nil {
 		return "", err
 	}
-	result = hexutil.EncodeUint64(uint64(resultIntf.(tcommon.JSONUint64)))
+
+	blockGasLimit := viper.GetUint64(common.CfgThetaBlockGasLimit)
+	estimatedGasWithMargin := uint64(1.1 * float64(resultIntf.(tcommon.JSONUint64))) // result should be way below the MAX_UINT_64, so no need to check for overflow
+	if estimatedGasWithMargin >= blockGasLimit {
+		estimatedGasWithMargin = blockGasLimit
+	}
+	result = hexutil.EncodeUint64(estimatedGasWithMargin)
 	return result, nil
 }

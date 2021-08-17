@@ -2,8 +2,11 @@ package ethrpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -16,67 +19,103 @@ import (
 
 // ------------------------------- eth_getTransactionByHash -----------------------------------
 func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string) (result common.EthGetTransactionResult, err error) {
-	logger.Infof("eth_getTransactionByHash called")
+	logger.Infof("eth_getTransactionByHash called, txHash: %v", hashStr)
+
+	result = common.EthGetTransactionResult{}
+	var resultIntf interface{}
+	var thetaGetTransactionResult trpc.GetTransactionResult
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
+	maxRetry := 5
+	for i := 0; i < maxRetry; i++ { // It might take some time for a block to be finalized, retry a few times
+		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 
-	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetTransactionResult{}
-		json.Unmarshal(jsonBytes, &trpcResult)
-		var objmap map[string]json.RawMessage
-		json.Unmarshal(jsonBytes, &objmap)
-		if objmap["transaction"] != nil {
-			if types.TxType(trpcResult.Type) == types.TxSend {
-				tx := types.SendTx{}
-				json.Unmarshal(objmap["transaction"], &tx)
-				trpcResult.Tx = &tx
+		parse := func(jsonBytes []byte) (interface{}, error) {
+			trpcResult := trpc.GetTransactionResult{}
+			json.Unmarshal(jsonBytes, &trpcResult)
+			var objmap map[string]json.RawMessage
+			json.Unmarshal(jsonBytes, &objmap)
+			if objmap["transaction"] != nil {
+				if types.TxType(trpcResult.Type) == types.TxSend {
+					tx := types.SendTx{}
+					json.Unmarshal(objmap["transaction"], &tx)
+					trpcResult.Tx = &tx
+				}
+				if types.TxType(trpcResult.Type) == types.TxSmartContract {
+					tx := types.SmartContractTx{}
+					json.Unmarshal(objmap["transaction"], &tx)
+					trpcResult.Tx = &tx
+				}
 			}
-			if types.TxType(trpcResult.Type) == types.TxSmartContract {
-				tx := types.SmartContractTx{}
-				json.Unmarshal(objmap["transaction"], &tx)
-				trpcResult.Tx = &tx
-			}
+			return trpcResult, nil
 		}
-		return trpcResult, nil
+		resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err != nil {
+			return result, err
+		}
+
+		thetaGetTransactionResult = resultIntf.(trpc.GetTransactionResult)
+		if (thetaGetTransactionResult.BlockHash != tcommon.Hash{}) {
+			break
+		}
+
+		time.Sleep(blockInterval) // one block duration
 	}
-	result = common.EthGetTransactionResult{}
-	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-	if err != nil {
-		return result, err
-	}
-	thetaGetTransactionResult := resultIntf.(trpc.GetTransactionResult)
+
 	result.BlockHash = thetaGetTransactionResult.BlockHash
 	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
-	result.TxHash = thetaGetTransactionResult.TxHash
+
+	trimmedHashStr := hashStr
+	if strings.HasPrefix(hashStr, "0x") {
+		trimmedHashStr = hashStr[2:]
+	}
+	txHash, _ := hex.DecodeString(trimmedHashStr)
+	result.TxHash = tcommon.BytesToHash(txHash) // For ethers.js compatibility, need to return the ETH tx hash (i.e. the query parameter)
+
+	logger.Infof("eth_getTransactionByHash, hashStr: %v, result.TxHash: %v", hashStr, result.TxHash.Hex())
+
+	nativeTxHash := thetaGetTransactionResult.TxHash // need use native tx hash to find the tx index, instead of the ETH tx hash
 	if thetaGetTransactionResult.Tx != nil {
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSend {
 			tx := thetaGetTransactionResult.Tx.(*types.SendTx)
 			result.From = tx.Inputs[0].Address
-			result.To = tx.Outputs[0].Address
+			if (tx.Outputs[0].Address == tcommon.Address{}) {
+				result.To = nil // conform to ETH standard
+			} else {
+				result.To = &tx.Outputs[0].Address
+			}
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
 			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
 			data := tx.Inputs[0].Signature.ToBytes()
-			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence)
+			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
 		}
 		if types.TxType(thetaGetTransactionResult.Type) == types.TxSmartContract {
 			tx := thetaGetTransactionResult.Tx.(*types.SmartContractTx)
 			result.From = tx.From.Address
-			result.To = tx.To.Address
+			if (tx.To.Address == tcommon.Address{}) {
+				result.To = nil // conform to ETH standard
+			} else {
+				result.To = &tx.To.Address
+			}
 			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
 			result.Gas = hexutil.Uint64(tx.GasLimit)
 			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
-			result.Input = tx.Data.String()
+			//result.Input = tx.Data.String()
+			result.Input = "0x" + hex.EncodeToString(tx.Data)
 			data := tx.From.Signature.ToBytes()
-			result.Nonce = hexutil.Uint64(tx.From.Sequence)
+			result.Nonce = hexutil.Uint64(tx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
 		}
 	}
-	result.TransactionIndex, err = GetTransactionIndex(result.BlockHash, result.TxHash, client)
+	result.TransactionIndex, err = GetTransactionIndex(result.BlockHash, nativeTxHash, client)
 	if err != nil {
 		return result, err
 	}
+
+	//resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
+	//logger.Infof("eth_getTransactionByHash, result: %v", string(resultJsonBytes))
+
 	return result, nil
 }
 

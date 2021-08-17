@@ -3,6 +3,8 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
+	"math"
+	"strings"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -16,6 +18,9 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 	logger.Infof("eth_getCode called")
 
 	height := common.GetHeightByTag(tag)
+	if height == math.MaxUint64 {
+		height = 0 // 0 is interpreted as the last height by the theta.GetAccount method
+	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetCode", trpc.GetCodeArgs{Address: address, Height: height})
@@ -34,6 +39,10 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 	result = resultIntf.(string)
 	if result == "" {
 		result = "0x"
+	}
+
+	if !strings.HasPrefix(result, "0x") {
+		result = "0x" + result
 	}
 
 	return result, nil

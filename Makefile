@@ -13,7 +13,7 @@ linux: gen_version
 	integration/docker/build/build.sh force
 
 windows:
-	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ go build -o build/windows/edgecore.exe ./cmd/edgecore
+	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ go build -o build/windows/edgecore.exe ./cmd/theta-eth-rpc-adaptor
 
 docker: 
 	integration/docker/node/build.sh force

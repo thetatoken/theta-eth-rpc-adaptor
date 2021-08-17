@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -54,11 +55,11 @@ func HandleThetaRPCResponse(rpcRes *rpcc.RPCResponse, rpcErr error, parse func(j
 func GetHeightByTag(tag string) (height tcommon.JSONUint64) {
 	switch tag {
 	case "latest":
-		height = tcommon.JSONUint64(0)
+		height = tcommon.JSONUint64(math.MaxUint64)
 	case "earliest":
 		height = tcommon.JSONUint64(1)
 	case "pending":
-		height = tcommon.JSONUint64(0)
+		height = tcommon.JSONUint64(math.MaxUint64)
 	default:
 		height = tcommon.JSONUint64(Str2hex2unit(tag))
 	}
@@ -205,7 +206,8 @@ func GetSeqByAddress(address tcommon.Address) (sequence uint64, err error) {
 	resultIntf, err := HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 
 	if err != nil {
-		return sequence, err
+		//return sequence, err
+		return 1, nil
 	}
 	sequence = resultIntf.(uint64) + 1
 

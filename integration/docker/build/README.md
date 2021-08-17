@@ -1,0 +1,1 @@
+A docker container to build linux binary for theta-eth-rpc-adaptor.

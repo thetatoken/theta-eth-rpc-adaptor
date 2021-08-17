@@ -3,6 +3,7 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
+	"math"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -16,6 +17,9 @@ func (e *EthRPCService) GetStorageAt(ctx context.Context, address string, storag
 	logger.Infof("eth_getStorageAt called")
 
 	height := common.GetHeightByTag(tag)
+	if height == math.MaxUint64 {
+		height = 0 // 0 is interpreted as the last height by the theta.GetStorageAt method
+	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	rpcRes, rpcErr := client.Call("theta.GetStorageAt", trpc.GetStorageAtArgs{

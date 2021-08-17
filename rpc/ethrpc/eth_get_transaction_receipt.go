@@ -2,6 +2,7 @@ package ethrpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -71,6 +72,10 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 
 	logger.Debugf("thetaGetTransactionResult: %v", thetaGetTransactionResult)
 
+	if thetaGetTransactionResult.Receipt == nil {
+		return result, nil
+	}
+
 	result.BlockHash = thetaGetTransactionResult.BlockHash
 	result.BlockHeight = hexutil.Uint64(thetaGetTransactionResult.BlockHeight)
 	result.TxHash = thetaGetTransactionResult.TxHash
@@ -97,7 +102,11 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 		result.Status = 0
 	}
 
-	logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
+	result.LogsBloom = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+	//logger.Infof("eth_getTransactionReceipt, txHash: %v, result.BlockHash: %v, result.ContractAddress: %v, result.Status: %v", hashStr, result.BlockHash.Hex(), result.ContractAddress.Hex(), result.Status)
+	resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
+	logger.Debugf("eth_getTransactionReceipt, result: %v", string(resultJsonBytes))
 
 	return result, nil
 }
@@ -141,7 +150,8 @@ func GetTransactionIndexAndCumulativeGasUsed(blockHash tcommon.Hash, transaction
 func ThetaLogToEthLog(log *types.Log) common.EthLogObj {
 	result := common.EthLogObj{}
 	result.Address = log.Address
-	result.Data = log.Data
+	result.Data = "0x" + hex.EncodeToString(log.Data)
+	result.Type = "mined"
 	result.Topics = log.Topics
 	return result
 }
