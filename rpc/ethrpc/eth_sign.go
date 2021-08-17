@@ -7,7 +7,7 @@ import (
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta/common/hexutil"
-	"golang.org/x/crypto/sha3"
+	// "golang.org/x/crypto/sha3"
 )
 
 const (
@@ -17,25 +17,14 @@ const (
 )
 
 // ------------------------------- eth_sign -----------------------------------
-func (e *EthRPCService) Sign(ctx context.Context, account string, message hexutil.Bytes) (result string, err error) {
-	logger.Infof("eth_sign called, account: %s, message: %s \n", account, message)
-	// sighash, _ := TextAndHash(message)
-	sighash := message
-	signature, err := common.SignRawBytes(strings.ToLower(account), sighash)
+func (e *EthRPCService) Sign(ctx context.Context, account string, message string) (result string, err error) {
+	logger.Infof("eth_sign called, account: %s, message: %v \n", account, message)
+	msgBytes, _ := hexutil.Decode(message)
+	signhash := []byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(msgBytes), msgBytes))
+	signature, err := common.SignRawBytes(strings.ToLower(account), signhash)
 	if err != nil {
 		return
 	}
-	if signature.ToBytes()[64] < 2 {
-		signature.ToBytes()[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
-	}
 	result = hexutil.Encode(signature.ToBytes())
-	logger.Infof("jlog7 result : %s \n", result)
 	return result, nil
-}
-
-func TextAndHash(data []byte) ([]byte, string) {
-	msg := fmt.Sprintf("%s%d%s", personalSignPrefix, len(data), string(data))
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write([]byte(msg))
-	return hasher.Sum(nil), msg
 }

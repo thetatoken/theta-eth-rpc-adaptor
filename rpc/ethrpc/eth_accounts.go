@@ -10,8 +10,5 @@ import (
 
 func (e *EthRPCService) Accounts(ctx context.Context) (result []string, err error) {
 	logger.Infof("eth_accounts called")
-	for key, _ := range common.TestWallets {
-		result = append(result, key)
-	}
-	return result, nil
+	return common.TestWalletArr, nil
 }

@@ -25,6 +25,7 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
 type AddressBook map[string]*crypto.PrivateKey
 
 var TestWallets AddressBook = make(AddressBook)
+var TestWalletArr []string
 
 func GetThetaRPCEndpoint() string {
 	thetaRPCEndpoint := viper.GetString(CfgThetaRPCEndpoint)

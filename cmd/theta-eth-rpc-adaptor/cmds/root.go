@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -74,6 +75,7 @@ func getDefaultConfigPath() string {
 func checkWallets() {
 	keysDirPath := path.Join(getDefaultConfigPath(), "keys")
 	log.Infof("Using keyDirPath: %v\n", keysDirPath)
+	common.TestWalletArr = make([]string, testAmount)
 	_, err := os.Stat(keysDirPath + "/testAddresses")
 	if os.IsNotExist(err) { //firstTime
 		err = createAccounts(keysDirPath, &common.TestWallets)
@@ -124,6 +126,8 @@ func getAccounts(keyPath string, accountbytes []byte, ab *common.AddressBook) er
 			return err
 		}
 		(*ab)[strings.ToLower(addresses[i].Hex())] = nodeKey.PrivateKey
+		common.TestWalletArr[i] = nodeKey.Address.Hex()
 	}
+	sort.Strings(common.TestWalletArr)
 	return nil
 }

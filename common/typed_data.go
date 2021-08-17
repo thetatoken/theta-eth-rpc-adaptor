@@ -105,7 +105,6 @@ func (typedData *TypedData) EncodeData(primaryType string, data map[string]inter
 
 	// Verify extra data
 	if exp, got := len(typedData.Types[primaryType]), len(data); exp < got {
-		logger.Infof("jlog8 primaryType is %s, typedData.Types is %+v", primaryType, typedData.Types)
 		return nil, fmt.Errorf("there is extra data provided in the message (%d < %d)", exp, got)
 	}
 

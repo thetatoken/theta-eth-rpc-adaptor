@@ -39,7 +39,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 	}
 	result = "0x" + resultIntf.(string)
 
-	logger.Infof("result: %v\n", result)
+	logger.Infof("eth_call, result: %v\n", result)
 
 	return result, nil
 }
