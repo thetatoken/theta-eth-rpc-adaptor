@@ -42,9 +42,9 @@ func (e *EthRPCService) GetBlockByHash(ctx context.Context, hashStr string, txDe
 func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr error, txDetails bool) (result common.EthGetBlockResult, err error) {
 	result = common.EthGetBlockResult{}
 	parse := func(jsonBytes []byte) (interface{}, error) {
-		trpcResult := trpc.GetBlockResult{}
+		trpcResult := common.ThetaGetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
-		if trpcResult.GetBlockResultInner == nil {
+		if trpcResult.ThetaGetBlockResultInner == nil {
 			return result, errors.New("empty block")
 		}
 		result.Transactions = make([]interface{}, 0)
@@ -55,8 +55,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 				var txmaps []map[string]json.RawMessage
 				json.Unmarshal(objmap["transactions"], &txmaps)
 				for i, omap := range txmaps {
-					tx := trpcResult.Txs[i].(trpc.Tx)
-					if types.TxType(tx.Type) == types.TxSmartContract {
+					if types.TxType(trpcResult.Txs[i].Type) == types.TxSmartContract {
 						scTx := types.SmartContractTx{}
 						json.Unmarshal(omap["raw"], &scTx)
 
@@ -85,7 +84,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 						GetRSVfromSignature(sigData, &ethTx)
 
 						result.Transactions = append(result.Transactions, ethTx)
-						result.GasUsed = hexutil.Uint64(tx.Receipt.GasUsed)
+						result.GasUsed = hexutil.Uint64(trpcResult.Txs[i].Receipt.GasUsed)
 					}
 				}
 			}
@@ -96,7 +95,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 	if err != nil {
 		return result, err
 	}
-	theta_GetBlockResult := resultIntf.(trpc.GetBlockResult)
+	theta_GetBlockResult := resultIntf.(common.ThetaGetBlockResult)
 	result.Height = hexutil.Uint64(theta_GetBlockResult.Height)
 	result.Hash = theta_GetBlockResult.Hash
 	result.Parent = theta_GetBlockResult.Parent
@@ -107,8 +106,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 	result.GasLimit = hexutil.Uint64(viper.GetUint64(common.CfgThetaBlockGasLimit))
 	result.Size = 1000
 
-	for _, txi := range theta_GetBlockResult.Txs {
-		tx := txi.(trpc.Tx)
+	for _, tx := range theta_GetBlockResult.Txs {
 		if !txDetails && types.TxType(tx.Type) == types.TxSmartContract {
 			result.Transactions = append(result.Transactions, tx.Hash)
 		}

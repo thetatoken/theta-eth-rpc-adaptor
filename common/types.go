@@ -2,9 +2,12 @@ package common
 
 import (
 	"github.com/thetatoken/theta/blockchain"
+	"github.com/thetatoken/theta/common"
 	tcommon "github.com/thetatoken/theta/common"
 	"github.com/thetatoken/theta/common/hexutil"
+	tcore "github.com/thetatoken/theta/core"
 	"github.com/thetatoken/theta/ledger/types"
+	trpc "github.com/thetatoken/theta/rpc"
 )
 
 type Bytes8 [8]byte
@@ -100,4 +103,29 @@ type EthSmartContractArgObj struct {
 	GasPrice string          `json:"gasPrice"`
 	Value    string          `json:"value"`
 	Data     string          `json:"data"`
+}
+
+type ThetaGetBlockResult struct {
+	*ThetaGetBlockResultInner
+}
+type ThetaGetBlocksResult []*ThetaGetBlockResultInner
+
+type ThetaGetBlockResultInner struct {
+	ChainID            string                    `json:"chain_id"`
+	Epoch              tcommon.JSONUint64        `json:"epoch"`
+	Height             tcommon.JSONUint64        `json:"height"`
+	Parent             tcommon.Hash              `json:"parent"`
+	TxHash             tcommon.Hash              `json:"transactions_hash"`
+	StateHash          tcommon.Hash              `json:"state_hash"`
+	Timestamp          *tcommon.JSONBig          `json:"timestamp"`
+	Proposer           tcommon.Address           `json:"proposer"`
+	HCC                tcore.CommitCertificate   `json:"hcc"`
+	GuardianVotes      *tcore.AggregatedVotes    `json:"guardian_votes"`
+	EliteEdgeNodeVotes *tcore.AggregatedEENVotes `json:"elite_edge_node_votes"`
+
+	Children []common.Hash     `json:"children"`
+	Status   tcore.BlockStatus `json:"status"`
+
+	Hash common.Hash `json:"hash"`
+	Txs  []trpc.Tx   `json:"transactions"`
 }
