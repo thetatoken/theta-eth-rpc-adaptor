@@ -9,7 +9,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/node"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/version"
 )
@@ -32,7 +34,9 @@ func runStart(cmd *cobra.Command, args []string) {
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())
 
-	checkWallets()
+	if !viper.GetBool(common.CfgNodeSkipInitialzeTestWallets) {
+		checkWallets()
+	}
 
 	n := node.NewNode()
 
