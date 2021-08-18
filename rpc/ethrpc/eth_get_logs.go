@@ -26,11 +26,11 @@ import (
 // }
 
 type EthGetLogsArgs struct {
-	FromBlock string          `json:"fromBlock"`
-	ToBlock   string          `json:"toBlock"`
-	Address   tcommon.Address `json:"address"`
-	Topics    []interface{}   `json:"topics"`
-	Blockhash tcommon.Hash    `json:"blockhash"`
+	FromBlock string        `json:"fromBlock"`
+	ToBlock   string        `json:"toBlock"`
+	Address   interface{}   `json:"address"`
+	Topics    []interface{} `json:"topics"`
+	Blockhash tcommon.Hash  `json:"blockhash"`
 }
 
 type EthGetLogsResult struct {
@@ -53,22 +53,14 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 
 	result = []EthGetLogsResult{}
 
-	// The Graph calls the eth_getLogs methods with topics formatted as a list of list (a bug?), i.e. topics : [[0x..., 0x....]]
-	// needs special handling to convert it into a list of hashs
-	var topics []tcommon.Hash
-	for _, val := range args.Topics {
-		switch val.(type) {
-		case string:
-			topic := tcommon.HexToHash(val.(string))
-			topics = append(topics, topic)
-		case []interface{}:
-			for _, item := range val.([]interface{}) {
-				topic := tcommon.HexToHash(item.(string))
-				topics = append(topics, topic)
-			}
-		default:
-			return result, fmt.Errorf("invalid args.Topics type: %v", args.Topics)
-		}
+	addresses, err := parseAddresses(args.Address)
+	if err != nil {
+		return result, err
+	}
+
+	topics, err := parseTopics(args.Topics)
+	if err != nil {
+		return result, err
 	}
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
@@ -108,7 +100,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			time.Sleep(blockInterval) // one block duration
 		}
 
-		blocks = append(blocks, block.ThetaGetBlockResultInner)
+		if block.ThetaGetBlockResultInner != nil {
+			blocks = append(blocks, block.ThetaGetBlockResultInner)
+		}
 	} else {
 		currentHeight, err := common.GetCurrentHeight()
 		if err != nil {
@@ -160,7 +154,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 				}
 
 				block := resultIntf.(common.ThetaGetBlockResult)
-				blocks = append(blocks, block.ThetaGetBlockResultInner)
+				if block.ThetaGetBlockResultInner != nil {
+					blocks = append(blocks, block.ThetaGetBlockResultInner)
+				}
 			}
 
 			if success {
@@ -171,6 +167,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		}
 	}
 	//logger.Infof("blocks: %v\n", blocks)
+
+	filterByAddress := !((len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
@@ -190,10 +188,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
 			logger.Debugf("topics: %v\n", topics)
 
-			if (args.Address != tcommon.Address{}) {
-				if receipt.ContractAddress != args.Address {
-					continue
-				}
+			if filterByAddress && !addressMatch(addresses, receipt.ContractAddress) {
+				continue
 			}
 
 			for logIndex, log := range receipt.Logs {
@@ -238,4 +234,56 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	logger.Debugf("eth_getLogs, result: %v", string(resultJson))
 
 	return result, nil
+}
+
+func parseAddresses(argsAddress interface{}) ([]tcommon.Address, error) {
+	// Some clients may call eth_getLogs with a single address or a list of addresses
+	var addresses []tcommon.Address
+	addrVal := argsAddress
+	switch addrVal.(type) {
+	case string:
+		address := tcommon.HexToAddress(addrVal.(string))
+		addresses = append(addresses, address)
+	case []interface{}:
+		for _, vi := range addrVal.([]interface{}) {
+			val := vi.(string)
+			address := tcommon.HexToAddress(val)
+			addresses = append(addresses, address)
+		}
+	default:
+		return []tcommon.Address{}, fmt.Errorf("invalid args.Address type: %v", argsAddress)
+	}
+
+	return addresses, nil
+}
+
+func parseTopics(argsTopics []interface{}) ([]tcommon.Hash, error) {
+	// some clients, e.g. the Graph calls the eth_getLogs methods with topics formatted as a list of list, i.e. topics : [[0x..., 0x....]]
+	// needs special handling to convert it into a list of hashs
+	var topics []tcommon.Hash
+	for _, val := range argsTopics {
+		switch val.(type) {
+		case string:
+			topic := tcommon.HexToHash(val.(string))
+			topics = append(topics, topic)
+		case []interface{}:
+			for _, item := range val.([]interface{}) {
+				topic := tcommon.HexToHash(item.(string))
+				topics = append(topics, topic)
+			}
+		default:
+			return []tcommon.Hash{}, fmt.Errorf("invalid args.Topics type: %v", argsTopics)
+		}
+	}
+
+	return topics, nil
+}
+
+func addressMatch(addresses []tcommon.Address, contractAddress tcommon.Address) bool {
+	for _, address := range addresses {
+		if address == contractAddress {
+			return true
+		}
+	}
+	return false
 }

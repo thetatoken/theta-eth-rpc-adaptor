@@ -44,7 +44,6 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	checkWallets()
 	RootCmd.PersistentFlags().StringVar(&cfgPath, "config", getDefaultConfigPath(), fmt.Sprintf("config path (default is %s)", getDefaultConfigPath()))
 }
 

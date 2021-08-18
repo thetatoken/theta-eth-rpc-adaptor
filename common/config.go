@@ -8,6 +8,9 @@ const (
 	// CfgConfigPath defines custom config path
 	CfgConfigPath = "config.path"
 
+	// CfgNodeSkipInitialzeTestWallets defines custom config path
+	CfgNodeSkipInitialzeTestWallets = "node.skipInitializeTestWallets"
+
 	// CfgThetaRPCEndpoint configures the Theta RPC endpoint
 	CfgThetaRPCEndpoint   = "theta.rpcEndpoint"
 	CfgThetaBlockGasLimit = "theta.blockGasLimit"
@@ -35,6 +38,8 @@ const (
 )
 
 func init() {
+	viper.SetDefault(CfgNodeSkipInitialzeTestWallets, false)
+
 	viper.SetDefault(CfgThetaRPCEndpoint, "http://127.0.0.1:16888/rpc")
 	viper.SetDefault(CfgThetaBlockGasLimit, 20000000)
 
