@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	"github.com/thetatoken/theta/cmd/thetacli/cmd/utils"
 	tcommon "github.com/thetatoken/theta/common"
+	"github.com/thetatoken/theta/crypto"
 	"github.com/thetatoken/theta/wallet"
 	ks "github.com/thetatoken/theta/wallet/softwallet/keystore"
 	wtypes "github.com/thetatoken/theta/wallet/types"
@@ -76,6 +78,9 @@ func checkWallets() {
 	log.Infof("Using keyDirPath: %v\n", keysDirPath)
 	common.TestWalletArr = make([]string, testAmount)
 	_, err := os.Stat(keysDirPath + "/testAddresses")
+
+	addPreloadedAccounts(&common.TestWallets)
+
 	if os.IsNotExist(err) { //firstTime
 		err = createAccounts(keysDirPath, &common.TestWallets)
 	}
@@ -88,6 +93,29 @@ func checkWallets() {
 		if err != nil {
 			log.Errorf("failed to get test accounts, %v", err)
 		}
+	}
+}
+
+// The privatenet environment has the following 10 test accounts preloaded with TFuel in the genesis
+func addPreloadedAccounts(ab *common.AddressBook) {
+	preloadedPrivateKeys := []string{
+		"1111111111111111111111111111111111111111111111111111111111111111",
+		"2222222222222222222222222222222222222222222222222222222222222222",
+		"3333333333333333333333333333333333333333333333333333333333333333",
+		"4444444444444444444444444444444444444444444444444444444444444444",
+		"5555555555555555555555555555555555555555555555555555555555555555",
+		"6666666666666666666666666666666666666666666666666666666666666666",
+		"7777777777777777777777777777777777777777777777777777777777777777",
+		"8888888888888888888888888888888888888888888888888888888888888888",
+		"9999999999999999999999999999999999999999999999999999999999999999",
+		"1000000000000000000000000000000000000000000000000000000000000000",
+	}
+
+	for _, psk := range preloadedPrivateKeys {
+		skBytes, _ := hex.DecodeString(psk)
+		sk, _ := crypto.PrivateKeyFromBytes(skBytes)
+		addr := strings.ToLower(sk.PublicKey().Address().Hex())
+		(*ab)[addr] = sk
 	}
 }
 
