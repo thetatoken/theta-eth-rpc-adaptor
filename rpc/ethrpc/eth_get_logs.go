@@ -130,9 +130,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			blockStart = blockEnd
 			blockEnd = tmp
 		}
-		if blockStart >= 2 {
-			blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
-		}
+		// if blockStart >= 2 {
+		// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
+		// }
 
 		logger.Infof("blockStart: %v, blockEnd: %v", blockStart, blockEnd)
 
