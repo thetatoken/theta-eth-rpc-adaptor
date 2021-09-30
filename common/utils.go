@@ -66,6 +66,18 @@ func GetHeightByTag(tag string) (height tcommon.JSONUint64) {
 	return height
 }
 
+func HexStrToBigInt(intHexStr string) *big.Int {
+	// remove 0x suffix if found in the input string
+	if strings.HasPrefix(intHexStr, "0x") {
+		intHexStr = strings.TrimPrefix(intHexStr, "0x")
+	}
+
+	val := new(big.Int)
+	val.SetString(intHexStr, 16)
+
+	return val
+}
+
 func Str2hex2unit(str string) uint64 {
 	// remove 0x suffix if found in the input string
 	if strings.HasPrefix(str, "0x") {
@@ -107,7 +119,8 @@ func GenerateSctx(arg EthSmartContractArgObj) (result *types.SmartContractTx, er
 		Address: arg.From, //tcommon.HexToAddress(arg.From.String()),
 		Coins: types.Coins{
 			ThetaWei: new(big.Int).SetUint64(0),
-			TFuelWei: new(big.Int).SetUint64(Str2hex2unit(arg.Value)),
+			//TFuelWei: new(big.Int).SetUint64(Str2hex2unit(arg.Value)),
+			TFuelWei: HexStrToBigInt(arg.Value),
 		},
 		Sequence: sequence,
 	}
