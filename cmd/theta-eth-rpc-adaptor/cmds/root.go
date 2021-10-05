@@ -79,8 +79,6 @@ func checkWallets() {
 	common.TestWalletArr = make([]string, testAmount)
 	_, err := os.Stat(keysDirPath + "/testAddresses")
 
-	addPreloadedAccounts(&common.TestWallets)
-
 	if os.IsNotExist(err) { //firstTime
 		err = createAccounts(keysDirPath, &common.TestWallets)
 	}

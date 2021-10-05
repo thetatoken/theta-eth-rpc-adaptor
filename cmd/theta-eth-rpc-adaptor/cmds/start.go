@@ -34,6 +34,7 @@ func runStart(cmd *cobra.Command, args []string) {
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())
 
+	addPreloadedAccounts(&common.TestWallets)
 	if !viper.GetBool(common.CfgNodeSkipInitialzeTestWallets) {
 		checkWallets()
 	}
