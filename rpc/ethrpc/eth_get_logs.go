@@ -188,14 +188,19 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
 			logger.Debugf("topics: %v\n", topics)
 
-			if filterByAddress && !addressMatch(addresses, receipt.ContractAddress) {
-				continue
-			}
+			// if filterByAddress && !addressMatch(addresses, receipt.ContractAddress) {
+			// 	continue
+			// }
 
 			for logIndex, log := range receipt.Logs {
 				if len(topics) > 0 {
+					if filterByAddress && !addressMatch(addresses, log.Address) {
+						continue
+					}
+
 					for _, topic := range log.Topics {
 						for _, t := range topics {
+
 							logger.Debugf("topic: %v\n", topic)
 							logger.Debugf("t: %v\n", t)
 							if topic == t {
@@ -206,7 +211,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 								res.TransactionHash = tx.Hash
 								res.BlockHash = block.Hash
 								res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-								res.Address = receipt.ContractAddress
+								res.Address = log.Address
 								res.Data = "0x" + hex.EncodeToString(log.Data)
 								res.Topics = log.Topics
 								result = append(result, res)
@@ -231,7 +236,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	}
 
 	resultJson, _ := json.Marshal(result)
-	logger.Debugf("eth_getLogs, result: %v", string(resultJson))
+	logger.Infof("eth_getLogs, result: %v", string(resultJson))
 
 	return result, nil
 }
