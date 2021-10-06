@@ -1,0 +1,12 @@
+theta:
+  rpcEndpoint: "http://theta-node-rpc-testnet.thetatoken.org:16888/rpc"
+rpc:
+  enabled: true
+  httpAddress: "0.0.0.0"
+  httpPort: 18888
+  wsAddress: "0.0.0.0"
+  wsPort: 18889
+  timeoutSecs: 600 
+  maxConnections: 2048
+log:
+  levels: "*:debug"
