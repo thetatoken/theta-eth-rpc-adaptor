@@ -8,10 +8,8 @@ WORKDIR $THETA_TOKEN_HOME/theta
 RUN git clone https://github.com/thetatoken/theta-protocol-ledger.git .
 RUN git checkout testnet
 RUN make install
-RUN cp -r ./integration/privatenet ../privatenet
 WORKDIR $THETA_TOKEN_HOME/theta-eth-rpc-adaptor
 COPY ./ .
-COPY ./config.yaml .
 RUN make install
 # FROM alpine:latest
 # RUN apk add --no-cache ca-certificates
