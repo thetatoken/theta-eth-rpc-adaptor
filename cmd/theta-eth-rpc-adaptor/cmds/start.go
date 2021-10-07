@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"context"
+	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -30,6 +31,10 @@ func init() {
 func runStart(cmd *cobra.Command, args []string) {
 	log.Infof("Version %v %s", version.Version, version.GitHash)
 	log.Infof("Built at %s", version.Timestamp)
+
+	go func() {
+		http.ListenAndServe(":8081", nil) // start pprof
+	}()
 
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())

@@ -168,7 +168,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	}
 	//logger.Infof("blocks: %v\n", blocks)
 
-	filterByAddress := !((len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
+	//filterByAddress := !((len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
+	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
@@ -256,7 +257,8 @@ func parseAddresses(argsAddress interface{}) ([]tcommon.Address, error) {
 			addresses = append(addresses, address)
 		}
 	default:
-		return []tcommon.Address{}, fmt.Errorf("invalid args.Address type: %v", argsAddress)
+		//return []tcommon.Address{}, fmt.Errorf("invalid args.Address type: %v", argsAddress)
+		return []tcommon.Address{}, nil
 	}
 
 	return addresses, nil
