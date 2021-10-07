@@ -10,7 +10,7 @@ RUN git checkout testnet
 RUN make install
 RUN cp -r ./integration/privatenet ../privatenet
 WORKDIR $THETA_TOKEN_HOME/theta-eth-rpc-adaptor
-RUN git clone https://github.com/thetatoken/theta-eth-rpc-adaptor.git .
+COPY ./ .
 COPY ./config.yaml .
 RUN make install
 # FROM alpine:latest
