@@ -8,15 +8,11 @@ WORKDIR $THETA_TOKEN_HOME/theta
 RUN git clone https://github.com/thetatoken/theta-protocol-ledger.git .
 RUN git checkout testnet
 RUN make install
-RUN cp -r ./integration/testnet ../testnet
-RUN mkdir ~/.thetacli
-RUN cp -r ./integration/testnet/thetacli/* ~/.thetacli/
-RUN chmod 700 ~/.thetacli/keys/encrypted
+RUN cp -r ./integration/privatenet ../privatenet
 WORKDIR $THETA_TOKEN_HOME/theta-eth-rpc-adaptor
 RUN git clone https://github.com/thetatoken/theta-eth-rpc-adaptor.git .
 COPY ./config.yaml .
 RUN make install
-COPY ./run.sh $GOPATH/bin
 # FROM alpine:latest
 # RUN apk add --no-cache ca-certificates
 ENV PATH=$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:$PATH
