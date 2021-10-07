@@ -47,6 +47,9 @@ type EthGetLogsResult struct {
 
 // ------------------------------- eth_getLogs -----------------------------------
 
+//
+// Reference: https://docs.alchemy.com/alchemy/guides/eth_getlogs
+//
 func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (result []EthGetLogsResult, err error) {
 	logger.Infof("eth_getLogs called, fromBlock: %v, toBlock: %v, address: %v, blockHash: %v, topics: %v\n",
 		args.FromBlock, args.ToBlock, args.Address, args.Blockhash.Hex(), args.Topics)
@@ -227,7 +230,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 					res.TransactionHash = tx.Hash
 					res.BlockHash = block.Hash
 					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-					res.Address = receipt.ContractAddress
+					res.Address = log.Address
 					res.Data = "0x" + hex.EncodeToString(log.Data)
 					res.Topics = log.Topics
 					result = append(result, res)
