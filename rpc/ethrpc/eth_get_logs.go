@@ -174,6 +174,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	//filterByAddress := !((len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 
+	logger.Debugf("filterByAddress: %v, addresses: %v", filterByAddress, addresses)
+
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
 		for txIndex, tx := range block.Txs {
@@ -197,11 +199,14 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 			// }
 
 			for logIndex, log := range receipt.Logs {
-				if len(topics) > 0 {
-					if filterByAddress && !addressMatch(addresses, log.Address) {
-						continue
-					}
 
+				logger.Debugf("filterByAddress: %v, addresses: %v, log.Address: %v, addrMatch: %v", filterByAddress, addresses, log.Address, addressMatch(addresses, log.Address))
+
+				if filterByAddress && !addressMatch(addresses, log.Address) {
+					continue
+				}
+
+				if len(topics) > 0 {
 					for _, topic := range log.Topics {
 						for _, t := range topics {
 
