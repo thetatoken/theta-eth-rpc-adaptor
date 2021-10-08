@@ -21,7 +21,7 @@ import (
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common", "severity": "INFO"})
 
 type AddressBook map[string]*crypto.PrivateKey
 
