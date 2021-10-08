@@ -22,7 +22,7 @@ func (e *EthRPCService) GetTransactionCount(ctx context.Context, address string,
 	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address, Height: height})
+	rpcRes, rpcErr := client.Call("theta.GetAccount", trpc.GetAccountArgs{Address: address, Height: height, Preview: true})
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.GetAccountResult{Account: &types.Account{}}
