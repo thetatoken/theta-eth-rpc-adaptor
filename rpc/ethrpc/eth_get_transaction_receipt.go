@@ -138,7 +138,7 @@ func GetTransactionIndexAndCumulativeGasUsed(blockHash tcommon.Hash, transaction
 		if tx.Hash == transactionHash {
 			for j, _ := range logs {
 				log := &logs[j]
-				log.LogIndex = hexutil.Uint64(logIndex)
+				log.LogIndex = hexutil.Uint64(logIndex + j)
 				log.TransactionIndex = hexutil.Uint64(i)
 			}
 			return hexutil.Uint64(i), cumulativeGas, nil

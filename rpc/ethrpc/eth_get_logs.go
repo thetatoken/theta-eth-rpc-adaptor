@@ -34,7 +34,7 @@ type EthGetLogsArgs struct {
 }
 
 type EthGetLogsResult struct {
-	Removed          bool            `json:"removed"`
+	//Removed          bool            `json:"removed"`
 	LogIndex         string          `json:"logIndex"`
 	TransactionIndex string          `json:"transactionIndex"`
 	TransactionHash  tcommon.Hash    `json:"transactionHash"`
@@ -43,6 +43,7 @@ type EthGetLogsResult struct {
 	Address          tcommon.Address `json:"address"`
 	Data             string          `json:"data"`
 	Topics           []tcommon.Hash  `json:"topics"`
+	Type             string          `json:"type"`
 }
 
 // ------------------------------- eth_getLogs -----------------------------------
@@ -214,7 +215,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 							logger.Debugf("t: %v\n", t)
 							if topic == t {
 								res := EthGetLogsResult{}
-								res.Removed = false
+								//res.Removed = false
+								res.Type = "mined"
 								res.LogIndex = common.Int2hex2str(logIndex)
 								res.TransactionIndex = common.Int2hex2str(txIndex)
 								res.TransactionHash = tx.Hash
@@ -229,7 +231,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 					}
 				} else {
 					res := EthGetLogsResult{}
-					res.Removed = false
+					//res.Removed = false
+					res.Type = "mined"
 					res.LogIndex = common.Int2hex2str(logIndex)
 					res.TransactionIndex = common.Int2hex2str(txIndex)
 					res.TransactionHash = tx.Hash

@@ -88,12 +88,13 @@ type EthLogObj struct {
 	BlockHash        tcommon.Hash    `json:"blockHash"`
 	BlockHeight      hexutil.Uint64  `json:"blockNumber"`
 	LogIndex         hexutil.Uint64  `json:"logIndex"`
-	Removed          bool            `json:"removed"`
 	Topics           []tcommon.Hash  `json:"topics"`
 	TxHash           tcommon.Hash    `json:"transactionHash"`
 	TransactionIndex hexutil.Uint64  `json:"transactionIndex"`
 	Data             string          `json:"data"`
 	Type             string          `json:"type"`
+	//Removed          bool            `json:"removed"`
+
 }
 
 type EthSmartContractArgObj struct {
