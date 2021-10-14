@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "netrpc", "severity": "INFO"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "netrpc"})
 
 // NetRPCService provides an API to access to the Net endpoints.
 type NetRPCService struct {

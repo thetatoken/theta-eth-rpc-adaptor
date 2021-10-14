@@ -1,6 +1,7 @@
 package ethrpc
 
 import (
+	"os"
 	"time"
 
 	erpclib "github.com/ethereum/go-ethereum/rpc"
@@ -9,10 +10,14 @@ import (
 
 var blockInterval time.Duration = 6 * time.Second
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ethrpc", "severity": "INFO"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ethrpc"})
 
 // EthRPCService provides an API to access to the Eth endpoints.
 type EthRPCService struct {
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
 }
 
 // NewEthRPCService creates a new API for the Ethereum RPC interface
