@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "web3rpc"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "web3rpc", "severity": "INFO"})
 
 // Web3RPCService provides an API to access to the Web3 endpoints.
 type Web3RPCService struct {

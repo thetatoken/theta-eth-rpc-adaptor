@@ -14,7 +14,7 @@ import (
 	"github.com/thetatoken/theta-eth-rpc-adaptor/rpc/web3rpc"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "rpc", "severity": "INFO"})
 
 const (
 	netNamespace  = "net"

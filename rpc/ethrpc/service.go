@@ -9,7 +9,7 @@ import (
 
 var blockInterval time.Duration = 6 * time.Second
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ethrpc"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ethrpc", "severity": "INFO"})
 
 // EthRPCService provides an API to access to the Eth endpoints.
 type EthRPCService struct {

@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "evmrpc"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "evmrpc", "severity": "INFO"})
 
 // EvmRPCService provides an API to access to the evm endpoints.
 type EvmRPCService struct {
