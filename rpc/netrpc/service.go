@@ -1,6 +1,8 @@
 package netrpc
 
 import (
+	"os"
+
 	erpclib "github.com/ethereum/go-ethereum/rpc"
 	log "github.com/sirupsen/logrus"
 )
@@ -9,6 +11,10 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "netrpc"})
 
 // NetRPCService provides an API to access to the Net endpoints.
 type NetRPCService struct {
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
 }
 
 // NewNetRPCService creates a new API for the Netereum RPC interface

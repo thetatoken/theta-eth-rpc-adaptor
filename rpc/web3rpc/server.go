@@ -1,6 +1,8 @@
 package web3rpc
 
 import (
+	"os"
+
 	erpclib "github.com/ethereum/go-ethereum/rpc"
 	log "github.com/sirupsen/logrus"
 )
@@ -9,6 +11,10 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "web3rpc"})
 
 // Web3RPCService provides an API to access to the Web3 endpoints.
 type Web3RPCService struct {
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
 }
 
 // NewWeb3RPCService creates a new API for the Web3ereum RPC interface

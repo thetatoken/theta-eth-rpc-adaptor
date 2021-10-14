@@ -3,6 +3,7 @@ package rpc
 import (
 	"fmt"
 	"net"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 
@@ -41,6 +42,10 @@ var (
 
 // Version of the RPC
 type Version int
+
+func init() {
+	log.SetOutput(os.Stdout)
+}
 
 // Namespace of the RPC version
 func (n Version) Namespace() string {

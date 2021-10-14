@@ -1,6 +1,8 @@
 package evmrpc
 
 import (
+	"os"
+
 	erpclib "github.com/ethereum/go-ethereum/rpc"
 	log "github.com/sirupsen/logrus"
 )
@@ -9,6 +11,10 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "evmrpc"})
 
 // EvmRPCService provides an API to access to the evm endpoints.
 type EvmRPCService struct {
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
 }
 
 // NewEvmRPCService creates a new API for the evm RPC interface

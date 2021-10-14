@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 
@@ -21,12 +22,16 @@ import (
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
-var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common", "severity": "INFO"})
+var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
 
 type AddressBook map[string]*crypto.PrivateKey
 
 var TestWallets AddressBook = make(AddressBook)
 var TestWalletArr []string
+
+func init() {
+	log.SetOutput(os.Stdout)
+}
 
 func GetThetaRPCEndpoint() string {
 	thetaRPCEndpoint := viper.GetString(CfgThetaRPCEndpoint)
