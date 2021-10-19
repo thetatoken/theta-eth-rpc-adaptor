@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
 	tcommon "github.com/thetatoken/theta/common"
@@ -134,7 +135,14 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
 		// }
 
-		logger.Infof("blockStart: %v, blockEnd: %v", blockStart, blockEnd)
+		blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
+		queryBlockRange := blockEnd - blockStart + 1
+
+		logger.Infof("blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
+		if queryBlockRange > tcommon.JSONUint64(blockRangeLimit) {
+			logger.Infof("queried block range too large")
+			return []EthGetLogsResult{}, fmt.Errorf("block range too large, we currently allow querying for at most %v blocks at a time (start: %v, end: %v)", blockRangeLimit, blockStart, blockEnd)
+		}
 
 		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
