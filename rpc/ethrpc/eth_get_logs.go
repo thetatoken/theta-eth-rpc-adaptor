@@ -62,7 +62,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		return result, err
 	}
 
-	topics, err := parseTopics(args.Topics)
+	topicsFilter, err := parseTopicsFilter(args.Topics)
 	if err != nil {
 		return result, err
 	}
@@ -172,7 +172,6 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	}
 	//logger.Infof("blocks: %v\n", blocks)
 
-	//filterByAddress := !((len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 
 	logger.Debugf("filterByAddress: %v, addresses: %v", filterByAddress, addresses)
@@ -189,56 +188,27 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 				continue
 			}
 
-			// if tx.Receipt != nil {
 			receipt := *tx.Receipt
 			logger.Debugf("receipt: %v\n", receipt)
 			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
-			logger.Debugf("topics: %v\n", topics)
-
-			// if filterByAddress && !addressMatch(addresses, receipt.ContractAddress) {
-			// 	continue
-			// }
+			logger.Debugf("topicsFilter: %v\n", topicsFilter)
 
 			for logIndex, log := range receipt.Logs {
 
 				logger.Debugf("filterByAddress: %v, addresses: %v, log.Address: %v, addrMatch: %v", filterByAddress, addresses, log.Address, addressMatch(addresses, log.Address))
-
 				if filterByAddress && !addressMatch(addresses, log.Address) {
 					continue
 				}
 
-				if len(topics) > 0 {
-					for _, topic := range log.Topics {
-						for _, t := range topics {
-
-							logger.Debugf("topic: %v\n", topic)
-							logger.Debugf("t: %v\n", t)
-							if topic == t {
-								res := EthGetLogsResult{}
-								//res.Removed = false
-								res.Type = "mined"
-								res.LogIndex = common.Int2hex2str(logIndex)
-								res.TransactionIndex = common.Int2hex2str(txIndex)
-								res.TransactionHash = tx.Hash
-								res.BlockHash = block.Hash
-								res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-								res.Address = log.Address
-								res.Data = "0x" + hex.EncodeToString(log.Data)
-								res.Topics = log.Topics
-								result = append(result, res)
-							}
-						}
-					}
-				} else {
+				if topicsMatch(topicsFilter, log) {
 					res := EthGetLogsResult{}
-					//res.Removed = false
 					res.Type = "mined"
 					res.LogIndex = common.Int2hex2str(logIndex)
 					res.TransactionIndex = common.Int2hex2str(txIndex)
 					res.TransactionHash = tx.Hash
 					res.BlockHash = block.Hash
 					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-					res.Address = log.Address
+					res.Address = receipt.ContractAddress
 					res.Data = "0x" + hex.EncodeToString(log.Data)
 					res.Topics = log.Topics
 					result = append(result, res)
@@ -275,26 +245,35 @@ func parseAddresses(argsAddress interface{}) ([]tcommon.Address, error) {
 	return addresses, nil
 }
 
-func parseTopics(argsTopics []interface{}) ([]tcommon.Hash, error) {
+func parseTopicsFilter(argsTopics []interface{}) ([][]tcommon.Hash, error) {
 	// some clients, e.g. the Graph calls the eth_getLogs methods with topics formatted as a list of list, i.e. topics : [[0x..., 0x....]]
 	// needs special handling to convert it into a list of hashs
-	var topics []tcommon.Hash
+	var topicsFilter [][]tcommon.Hash
 	for _, val := range argsTopics {
 		switch val.(type) {
 		case string:
 			topic := tcommon.HexToHash(val.(string))
-			topics = append(topics, topic)
+			topicsFilter = append(topicsFilter, []tcommon.Hash{topic})
 		case []interface{}:
 			for _, item := range val.([]interface{}) {
 				topic := tcommon.HexToHash(item.(string))
-				topics = append(topics, topic)
+				topicsFilter = append(topicsFilter, []tcommon.Hash{topic})
+			}
+		case [][]interface{}:
+			for _, itemList := range val.([][]interface{}) {
+				topicList := []tcommon.Hash{}
+				for _, item := range itemList {
+					topic := tcommon.HexToHash(item.(string))
+					topicList = append(topicList, topic)
+				}
+				topicsFilter = append(topicsFilter, topicList)
 			}
 		default:
-			return []tcommon.Hash{}, fmt.Errorf("invalid args.Topics type: %v", argsTopics)
+			return [][]tcommon.Hash{}, fmt.Errorf("invalid args.Topics type: %v", argsTopics)
 		}
 	}
 
-	return topics, nil
+	return topicsFilter, nil
 }
 
 func addressMatch(addresses []tcommon.Address, contractAddress tcommon.Address) bool {
@@ -303,5 +282,45 @@ func addressMatch(addresses []tcommon.Address, contractAddress tcommon.Address) 
 			return true
 		}
 	}
+	return false
+}
+
+// Reference: https://docs.alchemy.com/alchemy/guides/eth_getlogs#a-note-on-specifying-topic-filters
+func topicsMatch(topicsFilter [][]tcommon.Hash, log *types.Log) bool {
+	numFilters := len(topicsFilter)
+	numLogTopics := len(log.Topics)
+	for i := 0; i < numFilters; i++ {
+		if i >= numLogTopics {
+			break
+		}
+
+		logTopic := log.Topics[i]
+		if !topicIncludedIn(logTopic, topicsFilter[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func topicIncludedIn(logTopic tcommon.Hash, topicList []tcommon.Hash) bool {
+	if len(topicList) == 0 {
+		return true
+	}
+
+	for _, topic := range topicList {
+		if len(topic) == 0 {
+			return true
+		}
+
+		if (topic == tcommon.Hash{}) {
+			return true
+		}
+
+		if topic == logTopic {
+			return true
+		}
+	}
+
 	return false
 }
