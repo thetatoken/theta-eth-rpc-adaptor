@@ -55,7 +55,11 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
-			logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, resultIntf.(string))
+			resultMsg := ""
+			if resultIntf != nil {
+				resultMsg = resultIntf.(string)
+			}
+			logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, resultMsg)
 			return result, err
 		}
 
