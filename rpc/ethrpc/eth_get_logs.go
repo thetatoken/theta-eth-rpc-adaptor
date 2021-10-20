@@ -246,8 +246,6 @@ func parseAddresses(argsAddress interface{}) ([]tcommon.Address, error) {
 }
 
 func parseTopicsFilter(argsTopics []interface{}) ([][]tcommon.Hash, error) {
-	// some clients, e.g. the Graph calls the eth_getLogs methods with topics formatted as a list of list, i.e. topics : [[0x..., 0x....]]
-	// needs special handling to convert it into a list of hashs
 	var topicsFilter [][]tcommon.Hash
 	for _, val := range argsTopics {
 		switch val.(type) {
@@ -255,19 +253,12 @@ func parseTopicsFilter(argsTopics []interface{}) ([][]tcommon.Hash, error) {
 			topic := tcommon.HexToHash(val.(string))
 			topicsFilter = append(topicsFilter, []tcommon.Hash{topic})
 		case []interface{}:
+			topicList := []tcommon.Hash{}
 			for _, item := range val.([]interface{}) {
 				topic := tcommon.HexToHash(item.(string))
-				topicsFilter = append(topicsFilter, []tcommon.Hash{topic})
+				topicList = append(topicList, topic)
 			}
-		case [][]interface{}:
-			for _, itemList := range val.([][]interface{}) {
-				topicList := []tcommon.Hash{}
-				for _, item := range itemList {
-					topic := tcommon.HexToHash(item.(string))
-					topicList = append(topicList, topic)
-				}
-				topicsFilter = append(topicsFilter, topicList)
-			}
+			topicsFilter = append(topicsFilter, topicList)
 		default:
 			return [][]tcommon.Hash{}, fmt.Errorf("invalid args.Topics type: %v", argsTopics)
 		}
