@@ -208,7 +208,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 					res.TransactionHash = tx.Hash
 					res.BlockHash = block.Hash
 					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-					res.Address = receipt.ContractAddress
+					res.Address = log.Address
 					res.Data = "0x" + hex.EncodeToString(log.Data)
 					res.Topics = log.Topics
 					result = append(result, res)
