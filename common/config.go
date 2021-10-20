@@ -30,6 +30,9 @@ const (
 	// CfgRPCTimeoutSecs set a timeout for RPC.
 	CfgRPCTimeoutSecs = "rpc.timeoutSecs"
 
+	// CfgQueryGetLogsBlockRange sets the max block range for the eth_getLogs call
+	CfgQueryGetLogsBlockRange = "query.getLogsBlockRange"
+
 	// CfgLogLevels sets the log level.
 	CfgLogLevels = "log.levels"
 	// CfgLogPrintSelfID determines whether to print node's ID in log (Useful in simulation when
@@ -50,6 +53,8 @@ func init() {
 	viper.SetDefault(CfgRPCWSPort, "18889")
 	viper.SetDefault(CfgRPCMaxConnections, 2048)
 	viper.SetDefault(CfgRPCTimeoutSecs, 600)
+
+	viper.SetDefault(CfgQueryGetLogsBlockRange, 5000)
 
 	viper.SetDefault(CfgLogLevels, "*:debug")
 	viper.SetDefault(CfgLogPrintSelfID, false)
