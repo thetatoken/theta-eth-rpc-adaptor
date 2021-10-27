@@ -14,7 +14,8 @@ import (
 
 // ------------------------------- eth_call -----------------------------------
 
-func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag string) (result string, err error) {
+// Note: "tag" could be an integer block number, or the string "latest", "earliest" or "pending". So its type needs to be interface{}
+func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag interface{}) (result string, err error) {
 	logger.Infof("eth_call called, tx: %+v", argObj)
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
