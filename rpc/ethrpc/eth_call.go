@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
+	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
 	trpc "github.com/thetatoken/theta/rpc"
@@ -17,6 +19,12 @@ import (
 // Note: "tag" could be an integer block number, or the string "latest", "earliest" or "pending". So its type needs to be interface{}
 func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContractArgObj, tag interface{}) (result string, err error) {
 	logger.Infof("eth_call called, tx: %+v", argObj)
+
+	blockGasLimit := viper.GetUint64(common.CfgThetaBlockGasLimit)
+	gas, err := strconv.ParseUint(argObj.Gas, 16, 64)
+	if err != nil || gas > blockGasLimit {
+		argObj.Gas = "0x" + fmt.Sprintf("%x", blockGasLimit)
+	}
 
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
