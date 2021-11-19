@@ -70,115 +70,15 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		return result, err
 	}
 
-	parse := func(jsonBytes []byte) (interface{}, error) {
-		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
-
-		trpcResult := common.ThetaGetBlockResult{ThetaGetBlockResultInner: &common.ThetaGetBlockResultInner{}}
-		json.Unmarshal(jsonBytes, &trpcResult)
-		var objmap map[string]json.RawMessage
-		json.Unmarshal(jsonBytes, &objmap)
-		if objmap["transactions"] != nil {
-			txs := []trpc.Tx{}
-			json.Unmarshal(objmap["transactions"], &txs)
-			trpcResult.Txs = txs
-		}
-		return trpcResult, nil
-	}
-
 	maxRetry := 5
 	blocks := []*common.ThetaGetBlockResultInner{}
 	if args.Blockhash.Hex() != "0x0000000000000000000000000000000000000000000000000000000000000000" {
-		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-
-		var block common.ThetaGetBlockResult
-		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
-			if i == maxRetry {
-				return []EthGetLogsResult{}, fmt.Errorf("failed to retrieve block %v", args.Blockhash.Hex())
-			}
-
-			rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: args.Blockhash})
-			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-			if err == nil {
-				block = resultIntf.(common.ThetaGetBlockResult)
-				break
-			}
-
-			logger.Warnf("eth_getLogs, theta.GetBlock returned error: %v", err)
-			time.Sleep(blockInterval) // one block duration
-		}
-
-		if block.ThetaGetBlockResultInner != nil {
-			blocks = append(blocks, block.ThetaGetBlockResultInner)
-		}
+		err = retrieveBlockByHash(args.Blockhash, &blocks, maxRetry)
 	} else {
-		currentHeight, err := common.GetCurrentHeight()
-		if err != nil {
-			return result, err
-		}
-
-		blockStart := currentHeight
-		if args.FromBlock != "" {
-			blockStart = common.GetHeightByTag(args.FromBlock)
-			if blockStart == math.MaxUint64 {
-				blockStart = currentHeight
-			}
-		}
-
-		blockEnd := currentHeight
-		if args.ToBlock != "" {
-			blockEnd = common.GetHeightByTag(args.ToBlock)
-			if blockEnd == math.MaxUint64 {
-				blockEnd = currentHeight
-			}
-		}
-
-		if blockStart > blockEnd {
-			tmp := blockStart
-			blockStart = blockEnd
-			blockEnd = tmp
-		}
-		// if blockStart >= 2 {
-		// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
-		// }
-
-		blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
-		queryBlockRange := blockEnd - blockStart + 1
-
-		logger.Infof("blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
-		if queryBlockRange > tcommon.JSONUint64(blockRangeLimit) {
-			logger.Infof("queried block range too large")
-			return []EthGetLogsResult{}, fmt.Errorf("block range too large, we currently allow querying for at most %v blocks at a time (start: %v, end: %v)", blockRangeLimit, blockStart, blockEnd)
-		}
-
-		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-		for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
-			if i == maxRetry {
-				return []EthGetLogsResult{}, fmt.Errorf("failed to retrieve blocks from %v to %v", blockStart, blockEnd)
-			}
-
-			success := true
-			for h := uint64(blockStart); h <= uint64(blockEnd); h++ {
-				rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: tcommon.JSONUint64(h)})
-				resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-				if err != nil {
-					success = false
-					blocks = []*common.ThetaGetBlockResultInner{}
-					logger.Warnf("eth_getLogs, theta.GetBlocksByHeight returned error: %v", err)
-					break
-				}
-
-				block := resultIntf.(common.ThetaGetBlockResult)
-				if block.ThetaGetBlockResultInner != nil {
-					blocks = append(blocks, block.ThetaGetBlockResultInner)
-				}
-			}
-
-			if success {
-				break
-			}
-
-			time.Sleep(blockInterval) // one block duration
-		}
+		err = retrieveBlocksByRange(args.FromBlock, args.ToBlock, &blocks, maxRetry)
+	}
+	if err != nil {
+		return result, err
 	}
 	//logger.Infof("blocks: %v\n", blocks)
 
@@ -186,56 +86,12 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	start = time.Now()
 
 	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
-
 	logger.Debugf("filterByAddress: %v, addresses: %v", filterByAddress, addresses)
 
-	for _, block := range blocks {
-		logger.Debugf("txs: %+v\n", block.Txs)
-		for txIndex, tx := range block.Txs {
-			if types.TxType(tx.Type) != types.TxSmartContract {
-				continue
-			}
-
-			if tx.Receipt == nil {
-				logger.Errorf("No receipt for tx: %v", tx.Hash.Hex())
-				continue
-			}
-
-			receipt := *tx.Receipt
-			logger.Debugf("receipt: %v\n", receipt)
-			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
-			logger.Debugf("topicsFilter: %v\n", topicsFilter)
-
-			for logIndex, log := range receipt.Logs {
-
-				logger.Debugf("filterByAddress: %v, addresses: %v, log.Address: %v, addrMatch: %v", filterByAddress, addresses, log.Address, addressMatch(addresses, log.Address))
-				if filterByAddress && !addressMatch(addresses, log.Address) {
-					continue
-				}
-
-				if topicsMatch(topicsFilter, log) {
-					res := EthGetLogsResult{}
-					res.Type = "mined"
-					res.LogIndex = common.Int2hex2str(logIndex)
-					res.TransactionIndex = common.Int2hex2str(txIndex)
-					res.TransactionHash = tx.Hash
-					res.BlockHash = block.Hash
-					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
-					res.Address = log.Address
-					res.Data = "0x" + hex.EncodeToString(log.Data)
-					res.Topics = log.Topics
-					result = append(result, res)
-				}
-			}
-		}
-	}
-
-	processBlocksTime := time.Since(start)
-	start = time.Now()
+	extractLogs(addresses, topicsFilter, filterByAddress, blocks, result)
 
 	resultJson, _ := json.Marshal(result)
-	logger.Infof("eth_getLogs, queryBlocksTime: %v, processBlocksTime: %v", queryBlocksTime, processBlocksTime)
-
+	logger.Infof("eth_getLogs, queryBlocksTime: %v", queryBlocksTime)
 	logger.Infof("eth_getLogs, result: %v", string(resultJson))
 
 	return result, nil
@@ -332,4 +188,185 @@ func topicIncludedIn(logTopic tcommon.Hash, topicList []tcommon.Hash) bool {
 	}
 
 	return false
+}
+
+func retrieveBlockByHash(blockhash tcommon.Hash, blocks *[](*common.ThetaGetBlockResultInner), maxRetry int) (err error) {
+	parse := func(jsonBytes []byte) (interface{}, error) {
+		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
+
+		trpcResult := common.ThetaGetBlockResult{ThetaGetBlockResultInner: &common.ThetaGetBlockResultInner{}}
+		json.Unmarshal(jsonBytes, &trpcResult)
+		var objmap map[string]json.RawMessage
+		json.Unmarshal(jsonBytes, &objmap)
+		if objmap["transactions"] != nil {
+			txs := []trpc.Tx{}
+			json.Unmarshal(objmap["transactions"], &txs)
+			trpcResult.Txs = txs
+		}
+		return trpcResult, nil
+	}
+
+	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
+
+	var block common.ThetaGetBlockResult
+	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+		if i == maxRetry {
+			return fmt.Errorf("failed to retrieve block %v", blockhash.Hex())
+		}
+
+		rpcRes, rpcErr := client.Call("theta.GetBlock", trpc.GetBlockArgs{Hash: blockhash})
+		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err == nil {
+			block = resultIntf.(common.ThetaGetBlockResult)
+			break
+		}
+
+		logger.Warnf("eth_getLogs, theta.GetBlock returned error: %v", err)
+		time.Sleep(blockInterval) // one block duration
+	}
+
+	if block.ThetaGetBlockResultInner != nil {
+		(*blocks) = append((*blocks), block.ThetaGetBlockResultInner)
+	}
+
+	return nil
+}
+
+func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.ThetaGetBlockResultInner), maxRetry int) (err error) {
+	parse := func(jsonBytes []byte) (interface{}, error) {
+		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
+
+		trpcResult := common.ThetaGetBlocksResult{}
+
+		var objList []json.RawMessage
+		json.Unmarshal(jsonBytes, &objList)
+		for _, blockJsonBytes := range objList {
+			getBlockResult := common.ThetaGetBlockResult{ThetaGetBlockResultInner: &common.ThetaGetBlockResultInner{}}
+			json.Unmarshal(blockJsonBytes, &getBlockResult)
+			var objmap map[string]json.RawMessage
+			json.Unmarshal(blockJsonBytes, &objmap)
+			if objmap["transactions"] != nil {
+				txs := []trpc.Tx{}
+				json.Unmarshal(objmap["transactions"], &txs)
+				getBlockResult.Txs = txs
+			}
+			trpcResult = append(trpcResult, getBlockResult.ThetaGetBlockResultInner)
+		}
+
+		return trpcResult, nil
+	}
+
+	currentHeight, err := common.GetCurrentHeight()
+	if err != nil {
+		return err
+	}
+
+	blockStart := currentHeight
+	if fromBlock != "" {
+		blockStart = common.GetHeightByTag(fromBlock)
+		if blockStart == math.MaxUint64 {
+			blockStart = currentHeight
+		}
+	}
+
+	blockEnd := currentHeight
+	if toBlock != "" {
+		blockEnd = common.GetHeightByTag(toBlock)
+		if blockEnd == math.MaxUint64 {
+			blockEnd = currentHeight
+		}
+	}
+
+	if blockStart > blockEnd {
+		tmp := blockStart
+		blockStart = blockEnd
+		blockEnd = tmp
+	}
+	// if blockStart >= 2 {
+	// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
+	// }
+
+	blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
+	queryBlockRange := blockEnd - blockStart + 1
+
+	logger.Infof("blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
+	if queryBlockRange > tcommon.JSONUint64(blockRangeLimit) {
+		logger.Infof("queried block range too large")
+		return fmt.Errorf("block range too large, we currently allow querying for at most %v blocks at a time (start: %v, end: %v)", blockRangeLimit, blockStart, blockEnd)
+	}
+
+	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
+	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+		if i == maxRetry {
+			return fmt.Errorf("failed to retrieve blocks from %v to %v", blockStart, blockEnd)
+		}
+
+		success := true
+		for h := uint64(blockStart); h <= uint64(blockEnd); h++ {
+			rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: tcommon.JSONUint64(h)})
+			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+			if err != nil {
+				success = false
+				blocks = &[]*common.ThetaGetBlockResultInner{}
+				logger.Warnf("eth_getLogs, theta.GetBlocksByHeight returned error: %v", err)
+				break
+			}
+
+			block := resultIntf.(common.ThetaGetBlockResult)
+			if block.ThetaGetBlockResultInner != nil {
+				*blocks = append((*blocks), block.ThetaGetBlockResultInner)
+			}
+		}
+
+		if success {
+			break
+		}
+
+		time.Sleep(blockInterval) // one block duration
+	}
+
+	return nil
+}
+
+func extractLogs(addresses []tcommon.Address, topicsFilter [][]tcommon.Hash, filterByAddress bool, blocks [](*common.ThetaGetBlockResultInner), result []EthGetLogsResult) {
+	for _, block := range blocks {
+		logger.Debugf("txs: %+v\n", block.Txs)
+		for txIndex, tx := range block.Txs {
+			if types.TxType(tx.Type) != types.TxSmartContract {
+				continue
+			}
+
+			if tx.Receipt == nil {
+				logger.Errorf("No receipt for tx: %v", tx.Hash.Hex())
+				continue
+			}
+
+			receipt := *tx.Receipt
+			logger.Debugf("receipt: %v\n", receipt)
+			logger.Debugf("receipt.Logs: %v\n", receipt.Logs)
+			logger.Debugf("topicsFilter: %v\n", topicsFilter)
+
+			for logIndex, log := range receipt.Logs {
+
+				logger.Debugf("filterByAddress: %v, addresses: %v, log.Address: %v, addrMatch: %v", filterByAddress, addresses, log.Address, addressMatch(addresses, log.Address))
+				if filterByAddress && !addressMatch(addresses, log.Address) {
+					continue
+				}
+
+				if topicsMatch(topicsFilter, log) {
+					res := EthGetLogsResult{}
+					res.Type = "mined"
+					res.LogIndex = common.Int2hex2str(logIndex)
+					res.TransactionIndex = common.Int2hex2str(txIndex)
+					res.TransactionHash = tx.Hash
+					res.BlockHash = block.Hash
+					res.BlockNumber = hexutil.EncodeUint64(uint64(block.Height))
+					res.Address = log.Address
+					res.Data = "0x" + hex.EncodeToString(log.Data)
+					res.Topics = log.Topics
+					result = append(result, res)
+				}
+			}
+		}
+	}
 }
