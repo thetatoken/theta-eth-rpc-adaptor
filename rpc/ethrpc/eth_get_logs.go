@@ -56,6 +56,8 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	logger.Infof("eth_getLogs called, fromBlock: %v, toBlock: %v, address: %v, blockHash: %v, topics: %v\n",
 		args.FromBlock, args.ToBlock, args.Address, args.Blockhash.Hex(), args.Topics)
 
+	start := time.Now()
+
 	result = []EthGetLogsResult{}
 
 	addresses, err := parseAddresses(args.Address)
@@ -180,6 +182,9 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	}
 	//logger.Infof("blocks: %v\n", blocks)
 
+	queryBlocksTime := time.Since(start)
+	start = time.Now()
+
 	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 
 	logger.Debugf("filterByAddress: %v, addresses: %v", filterByAddress, addresses)
@@ -225,7 +230,12 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		}
 	}
 
+	processBlocksTime := time.Since(start)
+	start = time.Now()
+
 	resultJson, _ := json.Marshal(result)
+	logger.Infof("eth_getLogs, queryBlocksTime: %v, processBlocksTime: %v", queryBlocksTime, processBlocksTime)
+
 	logger.Infof("eth_getLogs, result: %v", string(resultJson))
 
 	return result, nil
