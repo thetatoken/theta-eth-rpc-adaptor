@@ -80,7 +80,6 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	if err != nil {
 		return result, err
 	}
-	//logger.Infof("blocks: %v\n", blocks)
 
 	queryBlocksTime := time.Since(start)
 	start = time.Now()
@@ -88,11 +87,10 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	filterByAddress := !(len(addresses) == 0 || (len(addresses) == 1) && (addresses[0] == tcommon.Address{}))
 	logger.Debugf("filterByAddress: %v, addresses: %v", filterByAddress, addresses)
 
-	extractLogs(addresses, topicsFilter, filterByAddress, blocks, result)
+	extractLogs(addresses, topicsFilter, filterByAddress, blocks, &result)
 
 	resultJson, _ := json.Marshal(result)
-	logger.Infof("eth_getLogs, queryBlocksTime: %v", queryBlocksTime)
-	logger.Infof("eth_getLogs, result: %v", string(resultJson))
+	logger.Infof("eth_getLogs, queryBlocksTime: %v, result: %v", queryBlocksTime, string(resultJson))
 
 	return result, nil
 }
@@ -174,6 +172,8 @@ func topicIncludedIn(logTopic tcommon.Hash, topicList []tcommon.Hash) bool {
 	}
 
 	for _, topic := range topicList {
+		logger.Debugf("topic: %v, logTopic: %v, topic == logTopic: %v\n", topic.Hex(), logTopic.Hex(), topic == logTopic)
+
 		if len(topic) == 0 {
 			return true
 		}
@@ -301,34 +301,29 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 			return fmt.Errorf("failed to retrieve blocks from %v to %v", blockStart, blockEnd)
 		}
 
-		success := true
-		for h := uint64(blockStart); h <= uint64(blockEnd); h++ {
-			rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{Height: tcommon.JSONUint64(h)})
-			resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-			if err != nil {
-				success = false
-				blocks = &[]*common.ThetaGetBlockResultInner{}
-				logger.Warnf("eth_getLogs, theta.GetBlocksByHeight returned error: %v", err)
-				break
-			}
+		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: tcommon.JSONUint64(blockStart), End: tcommon.JSONUint64(blockEnd)})
+		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err != nil {
+			blocks = &[]*common.ThetaGetBlockResultInner{}
+			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
+			time.Sleep(blockInterval) // one block duration
+			continue
+		}
 
-			block := resultIntf.(common.ThetaGetBlockResult)
-			if block.ThetaGetBlockResultInner != nil {
-				*blocks = append((*blocks), block.ThetaGetBlockResultInner)
+		getBlocksRes := resultIntf.(common.ThetaGetBlocksResult)
+		for _, block := range getBlocksRes {
+			if block != nil {
+				*blocks = append((*blocks), block)
 			}
 		}
 
-		if success {
-			break
-		}
-
-		time.Sleep(blockInterval) // one block duration
+		break
 	}
 
 	return nil
 }
 
-func extractLogs(addresses []tcommon.Address, topicsFilter [][]tcommon.Hash, filterByAddress bool, blocks [](*common.ThetaGetBlockResultInner), result []EthGetLogsResult) {
+func extractLogs(addresses []tcommon.Address, topicsFilter [][]tcommon.Hash, filterByAddress bool, blocks [](*common.ThetaGetBlockResultInner), result *([]EthGetLogsResult)) {
 	for _, block := range blocks {
 		logger.Debugf("txs: %+v\n", block.Txs)
 		for txIndex, tx := range block.Txs {
@@ -364,7 +359,7 @@ func extractLogs(addresses []tcommon.Address, topicsFilter [][]tcommon.Hash, fil
 					res.Address = log.Address
 					res.Data = "0x" + hex.EncodeToString(log.Data)
 					res.Topics = log.Topics
-					result = append(result, res)
+					*result = append(*result, res)
 				}
 			}
 		}
