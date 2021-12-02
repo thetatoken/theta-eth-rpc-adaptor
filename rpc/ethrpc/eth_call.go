@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -32,10 +33,6 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		return result, err
 	}
 
-	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-
-	rpcRes, rpcErr := client.Call("theta.CallSmartContract", trpc.CallSmartContractArgs{SctxBytes: hex.EncodeToString(sctxBytes)})
-
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		trpcResult := trpc.CallSmartContractResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
@@ -46,14 +43,25 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		return trpcResult.VmReturn, nil
 	}
 
-	//logger.Infof("eth_call rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
+	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 
-	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
-	if err != nil {
-		logger.Infof("eth_call error: %v", err)
-		return "", err
+	maxRetry := 3
+	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
+		rpcRes, rpcErr := client.Call("theta.CallSmartContract", trpc.CallSmartContractArgs{SctxBytes: hex.EncodeToString(sctxBytes)})
+		//logger.Infof("eth_call rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
+
+		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+		if err != nil {
+			if i == maxRetry-1 {
+				logger.Infof("eth_call error: %v", err)
+				return "", err
+			}
+			time.Sleep(blockInterval) // one block duration
+		} else {
+			result = "0x" + resultIntf.(string)
+			break
+		}
 	}
-	result = "0x" + resultIntf.(string)
 
 	logger.Infof("eth_call result: %v", result)
 
