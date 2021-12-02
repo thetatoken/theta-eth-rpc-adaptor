@@ -45,7 +45,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 
-	maxRetry := 3
+	maxRetry := 4
 	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
 		rpcRes, rpcErr := client.Call("theta.CallSmartContract", trpc.CallSmartContractArgs{SctxBytes: hex.EncodeToString(sctxBytes)})
 		//logger.Infof("eth_call rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
