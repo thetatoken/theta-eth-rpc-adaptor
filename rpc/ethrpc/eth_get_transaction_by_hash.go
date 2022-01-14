@@ -47,6 +47,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 					trpcResult.Tx = &tx
 				}
 			}
+			logger.Infof("eth_getTransactionByHash EvmRet: %+v\n", trpcResult.Receipt.EvmRet)
 			return trpcResult, nil
 		}
 		resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
