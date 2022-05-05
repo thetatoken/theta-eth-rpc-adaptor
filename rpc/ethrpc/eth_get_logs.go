@@ -131,6 +131,8 @@ func parseTopicsFilter(argsTopics []interface{}) ([][]tcommon.Hash, error) {
 				topicList = append(topicList, topic)
 			}
 			topicsFilter = append(topicsFilter, topicList)
+		case nil:
+			break
 		default:
 			return [][]tcommon.Hash{}, fmt.Errorf("invalid args.Topics type: %v", argsTopics)
 		}
