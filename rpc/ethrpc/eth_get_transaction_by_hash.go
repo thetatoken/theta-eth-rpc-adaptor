@@ -33,6 +33,9 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 		parse := func(jsonBytes []byte) (interface{}, error) {
 			trpcResult := trpc.GetTransactionResult{}
 			json.Unmarshal(jsonBytes, &trpcResult)
+			if (trpcResult.BlockHash == tcommon.Hash{}) {
+				return trpcResult, nil // Thet tx is not finalized yet. Just let the outer loop retry. Otherwise, tx unmashal might crash if we continue the parsing
+			}
 			var objmap map[string]json.RawMessage
 			json.Unmarshal(jsonBytes, &objmap)
 			if objmap["transaction"] != nil {
@@ -52,6 +55,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 		}
 		resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
+			logger.Warnf("eth_getTransactionByHash failed, err: %v", err)
 			return result, err
 		}
 
