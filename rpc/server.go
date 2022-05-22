@@ -3,6 +3,7 @@ package rpc
 import (
 	"fmt"
 	"net"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -55,6 +56,11 @@ func StartServers(apis []erpclib.API) error {
 		httpAddr := viper.GetString(common.CfgRPCHttpAddress)
 		httpPort := viper.GetString(common.CfgRPCHttpPort)
 		httpEndpoint = fmt.Sprintf("%v:%v", httpAddr, httpPort)
+		httpTimeouts = erpclib.HTTPTimeouts{
+			ReadTimeout:  viper.GetDuration(common.CfgRPCTimeoutSecs) * time.Second,
+			WriteTimeout: viper.GetDuration(common.CfgRPCTimeoutSecs) * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}
 		if err := startHTTP(apis); err != nil {
 			return err
 		}
