@@ -70,9 +70,9 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 						} else {
 							ethTx.To = &scTx.To.Address
 						}
-						ethTx.GasPrice = scTx.GasPrice
+						ethTx.GasPrice = "0x" + scTx.GasPrice.Text(16)
 						ethTx.Gas = hexutil.Uint64(scTx.GasLimit)
-						ethTx.Value = scTx.From.Coins.TFuelWei
+						ethTx.Value = "0x" + scTx.From.Coins.TFuelWei.Text(16)
 						ethTx.Input = "0x" + hex.EncodeToString(scTx.Data)
 						sigData := scTx.From.Signature.ToBytes()
 						ethTx.Nonce = hexutil.Uint64(scTx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1

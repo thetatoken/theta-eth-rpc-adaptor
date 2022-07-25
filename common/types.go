@@ -1,8 +1,6 @@
 package common
 
 import (
-	"math/big"
-
 	"github.com/thetatoken/theta/blockchain"
 	"github.com/thetatoken/theta/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -21,12 +19,12 @@ type EthGetTransactionResult struct {
 	From             tcommon.Address  `json:"from"`
 	To               *tcommon.Address `json:"to"`
 	Gas              hexutil.Uint64   `json:"gas"`
-	GasPrice         *big.Int         `json:"gasPrice"`
+	GasPrice         string           `json:"gasPrice"`
 	TxHash           tcommon.Hash     `json:"hash"`
 	Nonce            hexutil.Uint64   `json:"nonce"`
 	Input            string           `json:"input"`
 	TransactionIndex hexutil.Uint64   `json:"transactionIndex"`
-	Value            *big.Int         `json:"value"`
+	Value            string           `json:"value"`
 	V                hexutil.Uint64   `json:"v"` //ECDSA recovery id
 	R                tcommon.Hash     `json:"r"` //ECDSA signature r
 	S                tcommon.Hash     `json:"s"` //ECDSA signature s

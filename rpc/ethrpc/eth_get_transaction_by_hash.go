@@ -30,6 +30,10 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	for i := 0; i < maxRetry; i++ { // It might take some time for a block to be finalized, retry a few times
 		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 
+		if rpcErr != nil {
+			logger.Warnf("eth_getTransactionByHash failed, err: %v", rpcErr)
+		}
+
 		parse := func(jsonBytes []byte) (interface{}, error) {
 			trpcResult := trpc.GetTransactionResult{}
 			json.Unmarshal(jsonBytes, &trpcResult)
@@ -90,7 +94,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 				result.To = &tx.Outputs[0].Address
 			}
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
-			result.Value = tx.Inputs[0].Coins.TFuelWei
+			result.Value = "0x" + tx.Inputs[0].Coins.TFuelWei.Text(16)
 			data := tx.Inputs[0].Signature.ToBytes()
 			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
@@ -103,9 +107,9 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			} else {
 				result.To = &tx.To.Address
 			}
-			result.GasPrice = tx.GasPrice
+			result.GasPrice = "0x" + tx.GasPrice.Text(16)
 			result.Gas = hexutil.Uint64(tx.GasLimit)
-			result.Value = tx.From.Coins.TFuelWei
+			result.Value = "0x" + tx.From.Coins.TFuelWei.Text(16)
 			//result.Input = tx.Data.String()
 			result.Input = "0x" + hex.EncodeToString(tx.Data)
 			data := tx.From.Signature.ToBytes()
