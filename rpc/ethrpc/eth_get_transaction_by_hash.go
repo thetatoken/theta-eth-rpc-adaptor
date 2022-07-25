@@ -90,7 +90,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 				result.To = &tx.Outputs[0].Address
 			}
 			result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
-			result.Value = hexutil.Uint64(tx.Inputs[0].Coins.TFuelWei.Uint64())
+			result.Value = tx.Inputs[0].Coins.TFuelWei
 			data := tx.Inputs[0].Signature.ToBytes()
 			result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
 			GetRSVfromSignature(data, &result)
@@ -103,9 +103,9 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			} else {
 				result.To = &tx.To.Address
 			}
-			result.GasPrice = hexutil.Uint64(tx.GasPrice.Uint64())
+			result.GasPrice = tx.GasPrice
 			result.Gas = hexutil.Uint64(tx.GasLimit)
-			result.Value = hexutil.Uint64(tx.From.Coins.TFuelWei.Uint64())
+			result.Value = tx.From.Coins.TFuelWei
 			//result.Input = tx.Data.String()
 			result.Input = "0x" + hex.EncodeToString(tx.Data)
 			data := tx.From.Signature.ToBytes()
