@@ -19,12 +19,12 @@ type EthGetTransactionResult struct {
 	From             tcommon.Address  `json:"from"`
 	To               *tcommon.Address `json:"to"`
 	Gas              hexutil.Uint64   `json:"gas"`
-	GasPrice         hexutil.Uint64   `json:"gasPrice"`
+	GasPrice         string           `json:"gasPrice"`
 	TxHash           tcommon.Hash     `json:"hash"`
 	Nonce            hexutil.Uint64   `json:"nonce"`
 	Input            string           `json:"input"`
 	TransactionIndex hexutil.Uint64   `json:"transactionIndex"`
-	Value            hexutil.Uint64   `json:"value"`
+	Value            string           `json:"value"`
 	V                hexutil.Uint64   `json:"v"` //ECDSA recovery id
 	R                tcommon.Hash     `json:"r"` //ECDSA signature r
 	S                tcommon.Hash     `json:"s"` //ECDSA signature s
