@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"math"
 	"strings"
-	"time"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -25,7 +24,8 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 
-	maxRetry := 3
+	// maxRetry := 3
+	maxRetry := 1
 	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
 
 		rpcRes, rpcErr := client.Call("theta.GetCode", trpc.GetCodeArgs{Address: address, Height: height})
@@ -43,7 +43,7 @@ func (e *EthRPCService) GetCode(ctx context.Context, address string, tag string)
 
 		result = resultIntf.(string)
 		if result == "" { // might need to wait for the tx to be finalized
-			time.Sleep(blockInterval) // one block duration
+			// time.Sleep(blockInterval) // one block duration
 		}
 	}
 
