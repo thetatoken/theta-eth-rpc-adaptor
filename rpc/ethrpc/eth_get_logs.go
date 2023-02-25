@@ -75,7 +75,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	if args.Blockhash.Hex() != "0x0000000000000000000000000000000000000000000000000000000000000000" {
 		err = retrieveBlockByHash(args.Blockhash, &blocks, maxRetry)
 	} else {
-		err = retrieveBlocksByRange(args.FromBlock, args.ToBlock, &blocks, maxRetry)
+		err = retrieveBlocksByRange(e, args.FromBlock, args.ToBlock, &blocks, maxRetry)
 	}
 	if err != nil {
 		return result, err
@@ -234,7 +234,7 @@ func retrieveBlockByHash(blockhash tcommon.Hash, blocks *[](*common.ThetaGetBloc
 	return nil
 }
 
-func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.ThetaGetBlockResultInner), maxRetry int) (err error) {
+func retrieveBlocksByRange(e *EthRPCService, fromBlock string, toBlock string, blocks *[](*common.ThetaGetBlockResultInner), maxRetry int) (err error) {
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
 
@@ -288,8 +288,25 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 	// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
 	// }
 
+	heavyQueryThreshold := viper.GetUint64(common.CfgQueryGetLogsHeavyQueryThreshold)
 	blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
 	queryBlockRange := blockEnd - blockStart + 1
+
+	isHeavyQuery := uint64(queryBlockRange) > heavyQueryThreshold
+	if isHeavyQuery {
+		e.pendingHeavyEthLogQueryCounterLock.Lock()
+		hasTooManyPendingHeavyQueries := e.pendingHeavyEthLogQueryCounter > viper.GetUint64(common.CfgQueryMaxHeavyEthLogQueryCount)
+		e.pendingHeavyEthLogQueryCounterLock.Unlock()
+
+		if hasTooManyPendingHeavyQueries {
+			logger.Infof("Too many heavy eth_logs queries still pending, rejecting eth_logs query from block %v to %v", blockStart, blockEnd)
+			return fmt.Errorf("We are having too many pending heavy eth_logs queries, rejecting eth_logs query from block %v to %v", blockStart, blockEnd)
+		}
+
+		e.pendingHeavyEthLogQueryCounterLock.Lock()
+		e.pendingHeavyEthLogQueryCounter += 1
+		e.pendingHeavyEthLogQueryCounterLock.Unlock()
+	}
 
 	logger.Infof("blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
 	if queryBlockRange > tcommon.JSONUint64(blockRangeLimit) {
@@ -320,6 +337,14 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		}
 
 		break
+	}
+
+	if isHeavyQuery { // the heavy query has now been processed
+		e.pendingHeavyEthLogQueryCounterLock.Lock()
+		if e.pendingHeavyEthLogQueryCounter > 0 {
+			e.pendingHeavyEthLogQueryCounter -= 1
+		}
+		e.pendingHeavyEthLogQueryCounterLock.Unlock()
 	}
 
 	return nil

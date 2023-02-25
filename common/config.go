@@ -31,7 +31,9 @@ const (
 	CfgRPCTimeoutSecs = "rpc.timeoutSecs"
 
 	// CfgQueryGetLogsBlockRange sets the max block range for the eth_getLogs call
-	CfgQueryGetLogsBlockRange = "query.getLogsBlockRange"
+	CfgQueryGetLogsBlockRange          = "query.getLogsBlockRange"
+	CfgQueryGetLogsHeavyQueryThreshold = "query.getLogsHeavyQueryThreshold"
+	CfgQueryMaxHeavyEthLogQueryCount   = "query.maxHeavyEthLogQueryCount"
 
 	// CfgLogLevels sets the log level.
 	CfgLogLevels = "log.levels"
@@ -55,6 +57,8 @@ func init() {
 	viper.SetDefault(CfgRPCTimeoutSecs, 600)
 
 	viper.SetDefault(CfgQueryGetLogsBlockRange, 5000)
+	viper.SetDefault(CfgQueryGetLogsHeavyQueryThreshold, 500)
+	viper.SetDefault(CfgQueryMaxHeavyEthLogQueryCount, 10)
 
 	viper.SetDefault(CfgLogLevels, "*:debug")
 	viper.SetDefault(CfgLogPrintSelfID, false)
