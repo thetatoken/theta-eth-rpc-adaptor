@@ -84,11 +84,51 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 			totalGasPrice = new(big.Int).Add(transaction.GasPrice, totalGasPrice)
 		}
 	}
-	gasPrice := big.NewInt(4000000000000)
+
+	gasPrice := getDefaultGasPrice(client)
 	if count != 0 {
-		gasPrice = new(big.Int).Div(totalGasPrice, big.NewInt(int64(count)))
+		gasPrice = new(big.Int).Div(totalGasPrice, big.NewInt(int64(count))) // use the average
 	}
 	fmt.Printf("gasPrice: %v\n", gasPrice)
 	result = "0x" + gasPrice.Text(16)
 	return result, nil
+}
+
+func getDefaultGasPrice(client *rpcc.RPCClient) *big.Int {
+	gasPrice := big.NewInt(4000000000000) // Default for the Main Chain
+	ethChainID, err := getEthChainID(client)
+	if err == nil {
+		if ethChainID > 1000 { // must be a Subchain
+			gasPrice = big.NewInt(1e8) // Default for the Subchains
+		}
+	}
+	return gasPrice
+}
+
+func getEthChainID(client *rpcc.RPCClient) (uint64, error) {
+	rpcRes, rpcErr := client.Call("theta.GetStatus", trpc.GetStatusArgs{})
+	var blockHeight uint64
+	parse := func(jsonBytes []byte) (interface{}, error) {
+		trpcResult := trpc.GetStatusResult{}
+		json.Unmarshal(jsonBytes, &trpcResult)
+		re := chainIDResultWrapper{
+			chainID: trpcResult.ChainID,
+		}
+		blockHeight = uint64(trpcResult.LatestFinalizedBlockHeight)
+		return re, nil
+	}
+
+	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
+	if err != nil {
+		return 0, err
+	}
+	thetaChainIDResult, ok := resultIntf.(chainIDResultWrapper)
+	if !ok {
+		return 0, fmt.Errorf("failed to convert chainIDResultWrapper")
+	}
+
+	thetaChainID := thetaChainIDResult.chainID
+	ethChainID := types.MapChainID(thetaChainID, blockHeight).Uint64()
+
+	return ethChainID, nil
 }
