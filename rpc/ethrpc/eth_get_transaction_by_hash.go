@@ -34,7 +34,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 			logger.Warnf("eth_getTransactionByHash failed, err: %v", rpcErr)
 		}
 
-		parse := func(jsonBytes []byte) (interface{}, error err) {
+		parse := func(jsonBytes []byte) (resultIntf interface{}, err error) {
 			err = fmt.Errorf("Failed to parse the transaction")
 			defer func() {
 				recover() // recover from parsing exception.
