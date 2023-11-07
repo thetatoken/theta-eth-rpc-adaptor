@@ -13,12 +13,16 @@ linux: gen_version
 	integration/docker/build/build.sh force
 
 windows:
-	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ go build -o build/windows/edgecore.exe ./cmd/theta-eth-rpc-adaptor
+	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ go build -o build/windows/theta-eth-rpc-adaptor.exe ./cmd/theta-eth-rpc-adaptor
 
 docker: 
 	integration/docker/node/build.sh force
 
 install: gen_version release
+
+# Cross compile AMD64 binaries on Apple Silicon (M1/M2 chips, etc)
+install_as: gen_version
+	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o ${GOBIN}/theta-eth-rpc-adaptor ./cmd/theta-eth-rpc-adaptor
 
 release:
 	go install ./cmd/...
