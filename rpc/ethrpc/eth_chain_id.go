@@ -3,7 +3,6 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	hexutil "github.com/thetatoken/theta/common/hexutil"
@@ -36,11 +35,11 @@ func (e *EthRPCService) ChainId(ctx context.Context) (result string, err error) 
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 	thetaChainIDResult, ok := resultIntf.(chainIDResultWrapper)
 	if !ok {
-		return "", fmt.Errorf("failed to convert chainIDResultWrapper")
+		return "", nil
 	}
 
 	thetaChainID := thetaChainIDResult.chainID

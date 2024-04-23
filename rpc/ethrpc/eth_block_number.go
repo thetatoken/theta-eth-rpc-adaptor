@@ -16,7 +16,7 @@ func (e *EthRPCService) BlockNumber(ctx context.Context) (result string, err err
 	blockNumber, err := common.GetCurrentHeight()
 
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	result = hexutil.EncodeUint64(uint64(blockNumber))

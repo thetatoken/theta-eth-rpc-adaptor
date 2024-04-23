@@ -3,7 +3,6 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -39,11 +38,11 @@ func (e *EthRPCService) Syncing(ctx context.Context) (result interface{}, err er
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 	thetaSyncingResult, ok := resultIntf.(syncingResultWrapper)
 	if !ok {
-		return nil, fmt.Errorf("failed to convert syncingResultWrapper")
+		return nil, nil
 	}
 	if !thetaSyncingResult.syncing {
 		result = false

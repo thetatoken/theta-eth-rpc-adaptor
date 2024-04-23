@@ -19,7 +19,7 @@ func (e *EthRPCService) GetBlockTransactionCountByNumber(ctx context.Context, nu
 	if height == math.MaxUint64 {
 		height, err = common.GetCurrentHeight()
 		if err != nil {
-			return result, err
+			return result, nil
 		}
 	}
 
@@ -35,5 +35,5 @@ func (e *EthRPCService) GetBlockTransactionCountByNumber(ctx context.Context, nu
 	rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{
 		Height: height})
 	block, err := GetBlockFromTRPCResult(chainID, rpcRes, rpcErr, false)
-	return hexutil.Uint64(len(block.Transactions)), err
+	return hexutil.Uint64(len(block.Transactions)), nil
 }

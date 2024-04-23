@@ -20,7 +20,7 @@ func (e *EthRPCService) GetBlockByNumber(ctx context.Context, numberStr string, 
 	if height == math.MaxUint64 {
 		height, err = common.GetCurrentHeight()
 		if err != nil {
-			return result, err
+			return result, nil
 		}
 	}
 
@@ -42,11 +42,11 @@ func (e *EthRPCService) GetBlockByNumber(ctx context.Context, numberStr string, 
 
 		result, err = GetBlockFromTRPCResult(chainID, rpcRes, rpcErr, txDetails)
 		if err == nil {
-			return result, err
+			return result, nil
 		}
 
 		time.Sleep(blockInterval) // one block duration
 	}
 
-	return result, err
+	return result, nil
 }

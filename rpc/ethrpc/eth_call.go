@@ -30,7 +30,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
 		logger.Errorf("eth_call: Failed to get smart contract bytes: %+v\n", argObj)
-		return result, err
+		return result, nil
 	}
 
 	parse := func(jsonBytes []byte) (interface{}, error) {
@@ -38,7 +38,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		json.Unmarshal(jsonBytes, &trpcResult)
 		logger.Infof("eth_call Theta RPC result: %+v\n", trpcResult)
 		if len(trpcResult.VmError) > 0 {
-			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
+			return trpcResult.GasUsed, nil
 		}
 		return trpcResult.VmReturn, nil
 	}
@@ -54,7 +54,7 @@ func (e *EthRPCService) Call(ctx context.Context, argObj common.EthSmartContract
 		if err != nil {
 			if i == maxRetry-1 {
 				logger.Infof("eth_call error: %v", err)
-				return "", err
+				return "", nil
 			}
 			time.Sleep(blockInterval) // one block duration
 		} else {

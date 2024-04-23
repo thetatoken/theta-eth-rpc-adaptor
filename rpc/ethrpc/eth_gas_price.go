@@ -30,7 +30,7 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 	currentHeight, err := common.GetCurrentHeight()
 
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	// fmt.Printf("currentHeight: %v\n", currentHeight)
@@ -66,11 +66,11 @@ func (e *EthRPCService) GasPrice(ctx context.Context) (result string, err error)
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 	thetaGetBlockResult, ok := resultIntf.(common.ThetaGetBlockResult)
 	if !ok {
-		return "", fmt.Errorf("failed to convert GetBlockResult")
+		return "", nil
 	}
 	totalGasPrice := big.NewInt(0)
 	count := 0
@@ -120,11 +120,11 @@ func getEthChainID(client *rpcc.RPCClient) (uint64, error) {
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return 0, err
+		return 0, nil
 	}
 	thetaChainIDResult, ok := resultIntf.(chainIDResultWrapper)
 	if !ok {
-		return 0, fmt.Errorf("failed to convert chainIDResultWrapper")
+		return 0, nil
 	}
 
 	thetaChainID := thetaChainIDResult.chainID

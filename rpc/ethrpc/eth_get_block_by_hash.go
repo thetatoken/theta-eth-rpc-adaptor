@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"math/big"
 	"strings"
 
@@ -45,7 +44,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 		trpcResult := common.ThetaGetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		if trpcResult.ThetaGetBlockResultInner == nil {
-			return result, errors.New("empty block")
+			return result, nil
 		}
 		result.Transactions = make([]interface{}, 0)
 		if txDetails {
@@ -93,7 +92,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 	}
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 	theta_GetBlockResult := resultIntf.(common.ThetaGetBlockResult)
 	result.Height = hexutil.Uint64(theta_GetBlockResult.Height)

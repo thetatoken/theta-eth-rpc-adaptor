@@ -49,9 +49,7 @@ type EthGetLogsResult struct {
 
 // ------------------------------- eth_getLogs -----------------------------------
 
-//
 // Reference: https://docs.alchemy.com/alchemy/guides/eth_getlogs
-//
 func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (result []EthGetLogsResult, err error) {
 	logger.Infof("eth_getLogs called, fromBlock: %v, toBlock: %v, address: %v, blockHash: %v, topics: %v\n",
 		args.FromBlock, args.ToBlock, args.Address, args.Blockhash.Hex(), args.Topics)
@@ -62,12 +60,12 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 
 	addresses, err := parseAddresses(args.Address)
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 
 	topicsFilter, err := parseTopicsFilter(args.Topics)
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 
 	maxRetry := 5
@@ -78,7 +76,7 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 		err = retrieveBlocksByRange(args.FromBlock, args.ToBlock, &blocks, maxRetry)
 	}
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 
 	queryBlocksTime := time.Since(start)
