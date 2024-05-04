@@ -57,7 +57,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 				result.Gas = hexutil.Uint64(tx.GasLimit)
 				result.Value = "0x" + tx.From.Coins.TFuelWei.Text(16)
 				result.Input = tx.Data.String()
-				result.Nonce = hexutil.Uint64(tx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
+				result.Nonce = hexutil.Uint64(tx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequence starts from 1
 				data := tx.From.Signature.ToBytes()
 				GetRSVfromSignature(data, &result)
 			} else if types.TxType(indexedTx.Type) == types.TxSend {
@@ -71,7 +71,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 				}
 				result.Gas = hexutil.Uint64(tx.Fee.TFuelWei.Uint64())
 				result.Value = "0x" + tx.Inputs[0].Coins.TFuelWei.Text(16)
-				result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
+				result.Nonce = hexutil.Uint64(tx.Inputs[0].Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequence starts from 1
 				data := tx.Inputs[0].Signature.ToBytes()
 				GetRSVfromSignature(data, &result)
 			}

@@ -75,7 +75,7 @@ func GetBlockFromTRPCResult(chainID *big.Int, rpcRes *rpcc.RPCResponse, rpcErr e
 						ethTx.Value = "0x" + scTx.From.Coins.TFuelWei.Text(16)
 						ethTx.Input = "0x" + hex.EncodeToString(scTx.Data)
 						sigData := scTx.From.Signature.ToBytes()
-						ethTx.Nonce = hexutil.Uint64(scTx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequnce starts from 1
+						ethTx.Nonce = hexutil.Uint64(scTx.From.Sequence) - 1 // off-by-one: Ethereum's account nonce starts from 0, while Theta's account sequence starts from 1
 						//ethTx.TxHash = GetEthTxHash(chainID, ethTx)
 
 						txBytes, _ := types.TxToBytes(&scTx)
