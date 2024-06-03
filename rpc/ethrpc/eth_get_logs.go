@@ -305,7 +305,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		rpcResJson, err := json.Marshal(rpcRes)
 		if err != nil {
 			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
-		}j
+		}
 		if len(string(rpcResJson)) > 20000 {
 			logger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v, blockStart: %v, blockEnd: %v, blockRange: %v", len(string(rpcResJson)), blockStart, blockEnd, queryBlockRange)
 		}
