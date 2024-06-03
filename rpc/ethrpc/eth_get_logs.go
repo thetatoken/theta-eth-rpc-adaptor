@@ -289,23 +289,24 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 	blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
 	queryBlockRange := blockEnd - blockStart + 1
 
-	logger.Infof("blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
+	logger.Infof("eth_getLogs, theta.GetBlocksByRange blockStart: %v, blockEnd: %v, blockRange: %v", blockStart, blockEnd, queryBlockRange)
 	if queryBlockRange > tcommon.JSONUint64(blockRangeLimit) {
 		logger.Infof("queried block range too large")
-		return fmt.Errorf("block range too large, we currently allow querying for at most %v blocks at a time (start: %v, end: %v)", blockRangeLimit, blockStart, blockEnd)
+		return fmt.Errorf("eth_getLogs, theta.GetBlocksByRange block range too large, we currently allow querying for at most %v blocks at a time (start: %v, end: %v)", blockRangeLimit, blockStart, blockEnd)
 	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
 		if i == maxRetry {
-			return fmt.Errorf("failed to retrieve blocks from %v to %v", blockStart, blockEnd)
+			return fmt.Errorf("eth_getLogs, theta.GetBlocksByRange failed to retrieve blocks from %v to %v", blockStart, blockEnd)
 		}
 
 		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: tcommon.JSONUint64(blockStart), End: tcommon.JSONUint64(blockEnd)})
 		rpcResJson, err := json.Marshal(rpcRes)
 		if err != nil {
-			logger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v", len(string(rpcResJson)))
+			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
 		}
+		logger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v", len(string(rpcResJson)))
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
 			blocks = &[]*common.ThetaGetBlockResultInner{}
