@@ -49,9 +49,7 @@ type EthGetLogsResult struct {
 
 // ------------------------------- eth_getLogs -----------------------------------
 
-//
 // Reference: https://docs.alchemy.com/alchemy/guides/eth_getlogs
-//
 func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (result []EthGetLogsResult, err error) {
 	logger.Infof("eth_getLogs called, fromBlock: %v, toBlock: %v, address: %v, blockHash: %v, topics: %v\n",
 		args.FromBlock, args.ToBlock, args.Address, args.Blockhash.Hex(), args.Topics)
@@ -304,6 +302,10 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		}
 
 		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: tcommon.JSONUint64(blockStart), End: tcommon.JSONUint64(blockEnd)})
+		rpcResJson, err := json.Marshal(rpcRes)
+		if err != nil {
+			loggger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v", len(string(rpcResJson)))
+		}
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
 			blocks = &[]*common.ThetaGetBlockResultInner{}
