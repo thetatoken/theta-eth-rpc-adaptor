@@ -313,7 +313,9 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 				"func":           "theta.GetBlocksByRange",
 				"responseLength": len(string(rpcResJson)),
 				"blockRange":     queryBlockRange,
-			}).Infof("blockStart: %v, blockEnd: %v", blockStart, blockEnd)
+				"blockStart":     blockStart,
+				"blockEnd":       blockEnd,
+			}).Infof("resp size")
 		}
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
