@@ -38,6 +38,8 @@ const (
 	// CfgLogPrintSelfID determines whether to print node's ID in log (Useful in simulation when
 	// there are more than one node running).
 	CfgLogPrintSelfID = "log.printSelfID"
+	// CfgLogRpcResponseSizeTreshold response length log threshold
+	CfgLogRpcResponseSizeThreshold = "log.rpcResponseSizeThreshold"
 )
 
 func init() {
@@ -58,4 +60,5 @@ func init() {
 
 	viper.SetDefault(CfgLogLevels, "*:debug")
 	viper.SetDefault(CfgLogPrintSelfID, false)
+	viper.SetDefault(CfgLogRpcResponseSizeThreshold, 999999999)
 }

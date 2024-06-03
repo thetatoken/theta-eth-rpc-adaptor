@@ -307,7 +307,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		if err != nil {
 			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
 		}
-		if len(string(rpcResJson)) > 10 {
+		if len(string(rpcResJson)) > viper.GetInt(common.CfgLogRpcResponseSizeThreshold) {
 			logger.WithFields(log.Fields{
 				"rpc":            "eth_getLogs",
 				"func":           "theta.GetBlocksByRange",
