@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,14 @@ import (
 	trpc "github.com/thetatoken/theta/rpc"
 	rpcc "github.com/ybbus/jsonrpc"
 )
+
+func init() {
+	if os.Getenv("LOG_FORMAT") == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else {
+		log.SetFormatter(&log.TextFormatter{})
+	}
+}
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "common"})
 
