@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 
@@ -306,8 +307,13 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		if err != nil {
 			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
 		}
-		if len(string(rpcResJson)) > 20000 {
-			logger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v, blockStart: %v, blockEnd: %v, blockRange: %v", len(string(rpcResJson)), blockStart, blockEnd, queryBlockRange)
+		if len(string(rpcResJson)) > 10 {
+			logger.WithFields(log.Fields{
+				"rpc":            "eth_getLogs",
+				"func":           "theta.GetBlocksByRange",
+				"responseLength": len(string(rpcResJson)),
+				"blockRange":     queryBlockRange,
+			}).Infof("blockStart: %v, blockEnd: %v", blockStart, blockEnd)
 		}
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
