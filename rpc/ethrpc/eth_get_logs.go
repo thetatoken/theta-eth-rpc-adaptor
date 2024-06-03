@@ -304,7 +304,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: tcommon.JSONUint64(blockStart), End: tcommon.JSONUint64(blockEnd)})
 		rpcResJson, err := json.Marshal(rpcRes)
 		if err != nil {
-			loggger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v", len(string(rpcResJson)))
+			logger.Infof("eth_getLogs, theta.GetBlocksByRange responseLength: %v", len(string(rpcResJson)))
 		}
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
