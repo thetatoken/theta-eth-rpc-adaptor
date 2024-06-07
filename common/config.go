@@ -60,5 +60,5 @@ func init() {
 
 	viper.SetDefault(CfgLogLevels, "*:debug")
 	viper.SetDefault(CfgLogPrintSelfID, false)
-	viper.SetDefault(CfgLogRpcResponseSizeThreshold, 999999999)
+	viper.SetDefault(CfgLogRpcResponseSizeThreshold, 0)
 }

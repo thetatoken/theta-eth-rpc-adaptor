@@ -298,30 +298,59 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
-		if i == maxRetry {
-			return fmt.Errorf("eth_getLogs, theta.GetBlocksByRange failed to retrieve blocks from %v to %v", blockStart, blockEnd)
-		}
+		// moved last retry catch to just before the continue
+		// this didn't trigger anyway due to loop conditional of <
+		// if i == maxRetry {
+		// 	return fmt.Errorf("eth_getLogs, theta.GetBlocksByRange failed to retrieve blocks from %v to %v", blockStart, blockEnd)
+		// }
 
 		rpcRes, rpcErr := client.Call("theta.GetBlocksByRange", trpc.GetBlocksByRangeArgs{Start: tcommon.JSONUint64(blockStart), End: tcommon.JSONUint64(blockEnd)})
+
+		// log large responses
 		rpcResJson, err := json.Marshal(rpcRes)
 		if err != nil {
-			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
-		}
-		if len(string(rpcResJson)) > viper.GetInt(common.CfgLogRpcResponseSizeThreshold) {
+			// logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
 			logger.WithFields(log.Fields{
-				"rpc":            "eth_getLogs",
+				"method":       "eth_getLogs",
+				"func":         "theta.GetBlocksByRange",
+				"logEventName": "rpcLogLargeRespMarshallErr",
+			}).Infof("Error: $v", err)
+		}
+		if viper.GetInt(common.CfgLogRpcResponseSizeThreshold) > 0 && len(string(rpcResJson)) > viper.GetInt(common.CfgLogRpcResponseSizeThreshold) {
+			logger.WithFields(log.Fields{
+				"method":         "eth_getLogs",
 				"func":           "theta.GetBlocksByRange",
+				"logEventName":   "rpcLogLargeResp",
 				"responseLength": len(string(rpcResJson)),
 				"blockRange":     queryBlockRange,
 				"blockStart":     blockStart,
 				"blockEnd":       blockEnd,
-			}).Infof("resp size")
+			}).Infof("Logging Large Response")
 		}
+
 		resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
 			blocks = &[]*common.ThetaGetBlockResultInner{}
-			logger.Warnf("eth_getLogs, theta.GetBlocksByRange returned error: %v", err)
+			// logger.Warnf("eth_getLogs, theta.GetBlocksByRange HandleThetaRPCResponse returned error: %v", err)
+			logger.WithFields(log.Fields{
+				"method":       "eth_getLogs",
+				"func":         "theta.GetBlocksByRange",
+				"logEventName": "handleThetaRPCResponseErr",
+			}).Infof("Error: $v", err)
 			time.Sleep(blockInterval) // one block duration
+
+			// on last retry log and return last error
+			if i == maxRetry-1 {
+				logger.WithFields(log.Fields{
+					"method":       "eth_getLogs",
+					"func":         "theta.GetBlocksByRange",
+					"logEventName": "retriesFailed",
+					"blockRange":   queryBlockRange,
+					"blockStart":   blockStart,
+					"blockEnd":     blockEnd,
+				}).Infof("Error: $v", err)
+				return err
+			}
 			continue
 		}
 
