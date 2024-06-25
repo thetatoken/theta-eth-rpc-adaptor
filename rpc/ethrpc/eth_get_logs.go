@@ -369,7 +369,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 				"method":       "eth_getLogs",
 				"func":         "theta.GetBlocksByRange",
 				"logEventName": "rpcLogLargeRespMarshallErr",
-			}).Infof("Error: $v", err)
+			}).Infof("Error: %v", err)
 		}
 		if viper.GetInt(common.CfgLogRpcResponseSizeThreshold) > 0 && len(string(rpcResJson)) > viper.GetInt(common.CfgLogRpcResponseSizeThreshold) {
 			logger.WithFields(log.Fields{
@@ -391,7 +391,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 				"method":       "eth_getLogs",
 				"func":         "theta.GetBlocksByRange",
 				"logEventName": "handleThetaRPCResponseErr",
-			}).Infof("Error: $v", err)
+			}).Infof("Error: %v", err)
 			time.Sleep(blockInterval) // one block duration
 
 			// on last retry log and return last error
@@ -403,7 +403,7 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 					"blockRange":   queryBlockRange,
 					"blockStart":   blockStart,
 					"blockEnd":     blockEnd,
-				}).Infof("Error: $v", err)
+				}).Infof("Error: %v", err)
 				return err
 			}
 			continue
