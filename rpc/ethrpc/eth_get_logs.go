@@ -74,8 +74,37 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	if args.Blockhash.Hex() != "0x0000000000000000000000000000000000000000000000000000000000000000" {
 		err = retrieveBlockByHash(args.Blockhash, &blocks, maxRetry)
 	} else {
-		err = retrieveBlocksByRange(args.FromBlock, args.ToBlock, &blocks, maxRetry)
+		isHeavyQuery := false
+		isHeavyQuery, err = checkHeavyQuery(args.FromBlock, args.ToBlock)
+		if isHeavyQuery {
+			e.pendingHeavyGetLogsCounterLock.Lock()
+			hasTooManyPendingHeavyQueries := e.pendingHeavyGetLogsCounter > viper.GetUint64(common.CfgRPCMaxHeavyGetLogsQueryCount)
+			e.pendingHeavyGetLogsCounterLock.Unlock()
+
+			if hasTooManyPendingHeavyQueries {
+				warningMsg := fmt.Sprintf("too many pending heavy getLogs queries, rejecting getLogs query from block %v to %v", args.FromBlock, args.ToBlock)
+				logger.Warnf(warningMsg)
+				err = fmt.Errorf(warningMsg)
+			}
+
+			e.pendingHeavyGetLogsCounterLock.Lock()
+			e.pendingHeavyGetLogsCounter += 1
+			e.pendingHeavyGetLogsCounterLock.Unlock()
+
+			defer func() { // the heavy query has now been processed
+				e.pendingHeavyGetLogsCounterLock.Lock()
+				if e.pendingHeavyGetLogsCounter > 0 {
+					e.pendingHeavyGetLogsCounter -= 1
+				}
+				e.pendingHeavyGetLogsCounterLock.Unlock()
+			}()
+		}
+
+		if err == nil {
+			err = retrieveBlocksByRange(args.FromBlock, args.ToBlock, &blocks, maxRetry)
+		}
 	}
+
 	if err != nil {
 		return result, err
 	}
@@ -92,6 +121,22 @@ func (e *EthRPCService) GetLogs(ctx context.Context, args EthGetLogsArgs) (resul
 	logger.Infof("eth_getLogs, queryBlocksTime: %v, result: %v", queryBlocksTime, string(resultJson))
 
 	return result, nil
+}
+
+func checkHeavyQuery(fromBlock string, toBlock string) (bool, error) {
+	blockStart, blockEnd, err := getStartAndEndBlockHeight(fromBlock, toBlock)
+	if err != nil {
+		return false, err
+	}
+
+	queryBlockRange := uint64(blockEnd - blockStart + 1)
+	heavyQueryBlockRangeThreshold := viper.GetUint64(common.CfgRPCGetLogsHeavyQueryBlockRangeThreshold)
+	if queryBlockRange > heavyQueryBlockRangeThreshold {
+		logger.Warnf("heavy query, blockRange: %v, threshold: %v", queryBlockRange, heavyQueryBlockRangeThreshold)
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func parseAddresses(argsAddress interface{}) ([]tcommon.Address, error) {
@@ -233,6 +278,41 @@ func retrieveBlockByHash(blockhash tcommon.Hash, blocks *[](*common.ThetaGetBloc
 	return nil
 }
 
+func getStartAndEndBlockHeight(fromBlock string, toBlock string) (tcommon.JSONUint64, tcommon.JSONUint64, error) {
+	currentHeight, err := common.GetCurrentHeight()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	blockStart := currentHeight
+	if fromBlock != "" {
+		blockStart = common.GetHeightByTag(fromBlock)
+		if blockStart == math.MaxUint64 {
+			blockStart = currentHeight
+		}
+	}
+
+	blockEnd := currentHeight
+	if toBlock != "" {
+		blockEnd = common.GetHeightByTag(toBlock)
+		if blockEnd == math.MaxUint64 {
+			blockEnd = currentHeight
+		}
+	}
+
+	if blockStart > blockEnd {
+		tmp := blockStart
+		blockStart = blockEnd
+		blockEnd = tmp
+	} // this guarantees blockStart <= blockEnd
+
+	// if blockStart >= 2 {
+	// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
+	// }
+
+	return blockStart, blockEnd, nil
+}
+
 func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.ThetaGetBlockResultInner), maxRetry int) (err error) {
 	parse := func(jsonBytes []byte) (interface{}, error) {
 		//logger.Infof("eth_getLogs.parse, jsonBytes: %v", string(jsonBytes))
@@ -257,35 +337,10 @@ func retrieveBlocksByRange(fromBlock string, toBlock string, blocks *[](*common.
 		return trpcResult, nil
 	}
 
-	currentHeight, err := common.GetCurrentHeight()
+	blockStart, blockEnd, err := getStartAndEndBlockHeight(fromBlock, toBlock)
 	if err != nil {
 		return err
 	}
-
-	blockStart := currentHeight
-	if fromBlock != "" {
-		blockStart = common.GetHeightByTag(fromBlock)
-		if blockStart == math.MaxUint64 {
-			blockStart = currentHeight
-		}
-	}
-
-	blockEnd := currentHeight
-	if toBlock != "" {
-		blockEnd = common.GetHeightByTag(toBlock)
-		if blockEnd == math.MaxUint64 {
-			blockEnd = currentHeight
-		}
-	}
-
-	if blockStart > blockEnd {
-		tmp := blockStart
-		blockStart = blockEnd
-		blockEnd = tmp
-	}
-	// if blockStart >= 2 {
-	// 	blockStart -= 2 // Theta requires two consecutive committed blocks for finalization
-	// }
 
 	blockRangeLimit := viper.GetUint64(common.CfgQueryGetLogsBlockRange)
 	queryBlockRange := blockEnd - blockStart + 1
