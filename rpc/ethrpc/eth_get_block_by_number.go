@@ -32,7 +32,7 @@ func (e *EthRPCService) GetBlockByNumber(ctx context.Context, numberStr string, 
 	chainID := new(big.Int)
 	chainID.SetString(chainIDStr, 16)
 
-	maxRetry := 5
+	maxRetry := 4
 	for i := 0; i < maxRetry; i++ { // It might take some time for a block to be finalized, retry a few times
 		client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
 		rpcRes, rpcErr := client.Call("theta.GetBlockByHeight", trpc.GetBlockByHeightArgs{

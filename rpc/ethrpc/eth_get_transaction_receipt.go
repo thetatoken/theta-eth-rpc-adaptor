@@ -48,7 +48,7 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 	}
 
 	var thetaGetTransactionResult trpc.GetTransactionResult
-	maxRetry := 5
+	maxRetry := 4
 	for i := 0; i < maxRetry; i++ { // It might take some time for a tx to be finalized, retry a few times
 		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 		logger.Debugf("eth_getTransactionReceipt called, Theta rpcRes: %v, rpcErr: %v", rpcRes, rpcErr)
@@ -77,6 +77,8 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 	logger.Debugf("thetaGetTransactionResult: %v", thetaGetTransactionResult)
 
 	if thetaGetTransactionResult.Receipt == nil {
+		logger.Infof("eth_getTransactionReceipt, txHash: %v not found or receipt is nil", hashStr)
+		//result.Logs = []common.EthLogObj{}
 		return result, nil
 	}
 
