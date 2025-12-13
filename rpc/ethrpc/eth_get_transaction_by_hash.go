@@ -26,7 +26,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	var thetaGetTransactionResult trpc.GetTransactionResult
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
-	maxRetry := 5
+	maxRetry := 4
 	for i := 0; i < maxRetry; i++ { // It might take some time for a block to be finalized, retry a few times
 		rpcRes, rpcErr := client.Call("theta.GetTransaction", trpc.GetTransactionArgs{Hash: hashStr})
 
