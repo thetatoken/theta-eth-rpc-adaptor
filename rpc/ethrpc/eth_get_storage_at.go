@@ -35,7 +35,7 @@ func (e *EthRPCService) GetStorageAt(ctx context.Context, address string, storag
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	result = resultIntf.(string)

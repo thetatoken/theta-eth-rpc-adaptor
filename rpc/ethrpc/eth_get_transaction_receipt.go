@@ -60,7 +60,7 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 				resultMsg = resultIntf.(string)
 			}
 			logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, resultMsg)
-			return result, err
+			return result, nil
 		}
 
 		thetaGetTransactionResult = resultIntf.(trpc.GetTransactionResult)
@@ -98,7 +98,7 @@ func (e *EthRPCService) GetTransactionReceipt(ctx context.Context, hashStr strin
 	result.TransactionIndex, result.CumulativeGasUsed, err = GetTransactionIndexAndCumulativeGasUsed(result.BlockHash, result.TxHash, result.Logs, client)
 	if err != nil {
 		logger.Errorf("eth_getTransactionReceipt, err: %v, result: %v", err, result)
-		return nil, err
+		return nil, nil
 	}
 	if thetaGetTransactionResult.Receipt.EvmErr == "" {
 		result.Status = 1

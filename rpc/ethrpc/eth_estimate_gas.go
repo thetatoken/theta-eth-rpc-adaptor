@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 
 	"github.com/spf13/viper"
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
@@ -23,7 +22,7 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 	sctxBytes, err := common.GetSctxBytes(argObj)
 	if err != nil {
 		logger.Errorf("eth_estimateGas: Failed to get smart contract bytes: %+v\n", argObj)
-		return result, err
+		return result, nil
 	}
 
 	client := rpcc.NewRPCClient(common.GetThetaRPCEndpoint())
@@ -35,14 +34,14 @@ func (e *EthRPCService) EstimateGas(ctx context.Context, argObj common.EthSmartC
 		json.Unmarshal(jsonBytes, &trpcResult)
 		if len(trpcResult.VmError) > 0 {
 			logger.Warnf("eth_estimateGas: EVM execution failed: %v\n", trpcResult.VmError)
-			return trpcResult.GasUsed, fmt.Errorf(trpcResult.VmError)
+			return trpcResult.GasUsed, nil
 		}
 		return trpcResult.GasUsed, nil
 	}
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	blockGasLimit := viper.GetUint64(common.CfgThetaBlockGasLimit)

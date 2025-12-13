@@ -3,7 +3,6 @@ package ethrpc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/thetatoken/theta-eth-rpc-adaptor/common"
 	tcommon "github.com/thetatoken/theta/common"
@@ -29,7 +28,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 		trpcResult := common.ThetaGetBlockResult{}
 		json.Unmarshal(jsonBytes, &trpcResult)
 		if txIndex >= tcommon.JSONUint64(len(trpcResult.Txs)) {
-			return result, fmt.Errorf("transaction index out of range")
+			return result, nil
 		}
 		result.TransactionIndex = hexutil.Uint64(txIndex)
 		var objmap map[string]json.RawMessage
@@ -80,7 +79,7 @@ func GetIndexedTransactionFromBlock(rpcRes *rpcc.RPCResponse, rpcErr error, txIn
 	}
 	_, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 	return result, nil
 }

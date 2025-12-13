@@ -26,7 +26,7 @@ func (e *EthRPCService) ProtocolVersion(ctx context.Context) (result string, err
 
 	resultIntf, err := common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 	result = resultIntf.(string)
 

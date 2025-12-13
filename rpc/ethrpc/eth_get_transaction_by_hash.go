@@ -60,7 +60,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 		resultIntf, err = common.HandleThetaRPCResponse(rpcRes, rpcErr, parse)
 		if err != nil {
 			logger.Warnf("eth_getTransactionByHash failed, err: %v", err)
-			return result, err
+			return result, nil
 		}
 
 		thetaGetTransactionResult = resultIntf.(trpc.GetTransactionResult)
@@ -119,7 +119,7 @@ func (e *EthRPCService) GetTransactionByHash(ctx context.Context, hashStr string
 	}
 	result.TransactionIndex, err = GetTransactionIndex(result.BlockHash, nativeTxHash, client)
 	if err != nil {
-		return result, err
+		return result, nil
 	}
 
 	//resultJsonBytes, _ := json.MarshalIndent(result, "", "    ")
